@@ -59,8 +59,6 @@ import (
 	conf_v1 "github.com/nginxinc/kubernetes-ingress/pkg/apis/configuration/v1"
 	"github.com/nginxinc/kubernetes-ingress/pkg/apis/configuration/validation"
 	k8s_nginx "github.com/nginxinc/kubernetes-ingress/pkg/client/clientset/versioned"
-	k8s_nginx_informers "github.com/nginxinc/kubernetes-ingress/pkg/client/informers/externalversions"
-
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -269,7 +267,7 @@ func NewLoadBalancerController(input NewLoadBalancerControllerInput) *LoadBalanc
 			// no initial namespaces with watched label - skip creating informers for now
 			break
 		}
-		lbc.newNamespacedInformer(ns)
+		newNamespacedInformer(ns, lbc)
 	}
 
 	if lbc.areCustomResourcesEnabled {
@@ -638,72 +636,6 @@ func (lbc *LoadBalancerController) sync(task task) {
 
 		glog.V(3).Infof("Batch sync completed")
 	}
-}
-
-func (lbc *LoadBalancerController) newNamespacedInformer(ns string) *namespacedInformer {
-	nsi := &namespacedInformer{}
-	nsi.stopCh = make(chan struct{})
-	nsi.namespace = ns
-	nsi.sharedInformerFactory = informers.NewSharedInformerFactoryWithOptions(lbc.client, lbc.resync, informers.WithNamespace(ns))
-
-	// create handlers for resources we care about
-	nsi.addIngressHandler(createIngressHandlers(lbc))
-	nsi.addServiceHandler(createServiceHandlers(lbc))
-	nsi.addEndpointSliceHandler(createEndpointSliceHandlers(lbc))
-	nsi.addPodHandler()
-
-	secretsTweakListOptionsFunc := func(options *meta_v1.ListOptions) {
-		// Filter for helm release secrets.
-		helmSecretSelector := fields.OneTermNotEqualSelector(typeKeyword, helmReleaseType)
-		baseSelector, err := fields.ParseSelector(options.FieldSelector)
-
-		if err != nil {
-			options.FieldSelector = helmSecretSelector.String()
-		} else {
-			options.FieldSelector = fields.AndSelectors(baseSelector, helmSecretSelector).String()
-		}
-	}
-
-	// Check if secrets informer should be created for this namespace
-	for _, v := range lbc.secretNamespaceList {
-		if v == "" || v == ns {
-			nsi.isSecretsEnabledNamespace = true
-			nsi.secretInformerFactory = informers.NewSharedInformerFactoryWithOptions(lbc.client, lbc.resync, informers.WithNamespace(ns), informers.WithTweakListOptions(secretsTweakListOptionsFunc))
-			nsi.addSecretHandler(createSecretHandlers(lbc))
-			break
-		}
-	}
-
-	if lbc.areCustomResourcesEnabled {
-		nsi.areCustomResourcesEnabled = true
-		nsi.confSharedInformerFactory = k8s_nginx_informers.NewSharedInformerFactoryWithOptions(lbc.confClient, lbc.resync, k8s_nginx_informers.WithNamespace(ns))
-
-		nsi.addVirtualServerHandler(createVirtualServerHandlers(lbc))
-		nsi.addVirtualServerRouteHandler(createVirtualServerRouteHandlers(lbc))
-		nsi.addTransportServerHandler(createTransportServerHandlers(lbc))
-		nsi.addPolicyHandler(createPolicyHandlers(lbc))
-
-	}
-
-	if lbc.appProtectEnabled || lbc.appProtectDosEnabled {
-		nsi.dynInformerFactory = dynamicinformer.NewFilteredDynamicSharedInformerFactory(lbc.dynClient, 0, ns, nil)
-		if lbc.appProtectEnabled {
-			nsi.appProtectEnabled = true
-			nsi.addAppProtectPolicyHandler(createAppProtectPolicyHandlers(lbc))
-			nsi.addAppProtectLogConfHandler(createAppProtectLogConfHandlers(lbc))
-			nsi.addAppProtectUserSigHandler(createAppProtectUserSigHandlers(lbc))
-		}
-
-		if lbc.appProtectDosEnabled {
-			nsi.appProtectDosEnabled = true
-			nsi.addAppProtectDosPolicyHandler(createAppProtectDosPolicyHandlers(lbc))
-			nsi.addAppProtectDosLogConfHandler(createAppProtectDosLogConfHandlers(lbc))
-			nsi.addAppProtectDosProtectedResourceHandler(createAppProtectDosProtectedResourceHandlers(lbc))
-		}
-	}
-
-	lbc.namespacedInformers[ns] = nsi
-	return nsi
 }
 
 func (lbc *LoadBalancerController) addConfigMapHandler(handlers cache.ResourceEventHandlerFuncs, namespace string) {
