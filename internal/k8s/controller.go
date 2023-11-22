@@ -342,6 +342,223 @@ func NewLoadBalancerController(input NewLoadBalancerControllerInput) *LoadBalanc
 	return lbc
 }
 
+// Run starts the LoadBalancerController
+func (lbc *LoadBalancerController) Run() {
+	lbc.ctx, lbc.cancel = context.WithCancel(context.Background())
+
+	if lbc.namespaceWatcherController != nil {
+		go lbc.namespaceWatcherController.Run(lbc.ctx.Done())
+	}
+
+	if lbc.spiffeCertFetcher != nil {
+		_, _, err := lbc.spiffeCertFetcher.Start(lbc.ctx)
+		lbc.addInternalRouteServer()
+		if err != nil {
+			glog.Fatal(err)
+		}
+
+		// wait for initial bundle
+		timeoutch := make(chan bool, 1)
+		go func() { time.Sleep(time.Second * 30); timeoutch <- true }()
+		select {
+		case cert := <-lbc.spiffeCertFetcher.CertCh:
+			lbc.syncSVIDRotation(cert)
+		case <-timeoutch:
+			glog.Fatal("Failed to download initial spiffe trust bundle")
+		}
+
+		go func() {
+			for {
+				select {
+				case err := <-lbc.spiffeCertFetcher.WatchErrCh:
+					glog.Errorf("error watching for SVID rotations: %v", err)
+					return
+				case cert := <-lbc.spiffeCertFetcher.CertCh:
+					lbc.syncSVIDRotation(cert)
+				}
+			}
+		}()
+	}
+	if lbc.certManagerController != nil {
+		go lbc.certManagerController.Run(lbc.ctx.Done())
+	}
+	if lbc.externalDNSController != nil {
+		go lbc.externalDNSController.Run(lbc.ctx.Done())
+	}
+	if lbc.leaderElector != nil {
+		go lbc.leaderElector.Run(lbc.ctx)
+	}
+
+	for _, nif := range lbc.namespacedInformers {
+		nif.start()
+	}
+
+	if lbc.watchNginxConfigMaps {
+		go lbc.configMapController.Run(lbc.ctx.Done())
+	}
+
+	if lbc.watchGlobalConfiguration {
+		go lbc.globalConfigurationController.Run(lbc.ctx.Done())
+	}
+	if lbc.watchIngressLink {
+		go lbc.ingressLinkInformer.Run(lbc.ctx.Done())
+	}
+
+	totalCacheSyncs := lbc.cacheSyncs
+
+	for _, nif := range lbc.namespacedInformers {
+		totalCacheSyncs = append(totalCacheSyncs, nif.cacheSyncs...)
+	}
+
+	glog.V(3).Infof("Waiting for %d caches to sync", len(totalCacheSyncs))
+
+	if !cache.WaitForCacheSync(lbc.ctx.Done(), totalCacheSyncs...) {
+		return
+	}
+
+	lbc.preSyncSecrets()
+
+	glog.V(3).Infof("Starting the queue with %d initial elements", lbc.syncQueue.Len())
+
+	go lbc.syncQueue.Run(time.Second, lbc.ctx.Done())
+	<-lbc.ctx.Done()
+}
+
+// Stop shuts down the LoadBalancerController
+func (lbc *LoadBalancerController) Stop() {
+	lbc.cancel()
+	for _, nif := range lbc.namespacedInformers {
+		nif.stop()
+	}
+	lbc.syncQueue.Shutdown()
+}
+
+// IsNginxReady returns ready status of NGINX
+func (lbc *LoadBalancerController) IsNginxReady() bool {
+	return lbc.isNginxReady
+}
+
+// HasCorrectIngressClass checks if resource ingress class annotation (if exists) or ingressClass string for VS/VSR is matching with Ingress Controller class
+func (lbc *LoadBalancerController) HasCorrectIngressClass(obj interface{}) bool {
+	var class string
+	switch obj := obj.(type) {
+	case *conf_v1.VirtualServer:
+		class = obj.Spec.IngressClass
+	case *conf_v1.VirtualServerRoute:
+		class = obj.Spec.IngressClass
+	case *conf_v1.TransportServer:
+		class = obj.Spec.IngressClass
+	case *conf_v1.Policy:
+		class = obj.Spec.IngressClass
+	case *networking.Ingress:
+		class = obj.Annotations[ingressClassKey]
+		if class == "" && obj.Spec.IngressClassName != nil {
+			class = *obj.Spec.IngressClassName
+		} else if class != "" {
+			// the annotation takes precedence over the field
+			glog.Warningln("Using the DEPRECATED annotation 'kubernetes.io/ingress.class'. The 'ingressClassName' field will be ignored.")
+		}
+		return class == lbc.ingressClass
+
+	default:
+		return false
+	}
+
+	return class == lbc.ingressClass || class == ""
+}
+
+// UpdateVirtualServerStatusAndEventsOnDelete updates the virtual server status and events
+func (lbc *LoadBalancerController) UpdateVirtualServerStatusAndEventsOnDelete(vsConfig *VirtualServerConfiguration, changeError string, deleteErr error) {
+	eventType := api_v1.EventTypeWarning
+	eventTitle := "Rejected"
+	eventWarningMessage := ""
+	state := ""
+
+	// VirtualServer either became invalid or lost its host
+	if changeError != "" {
+		eventWarningMessage = fmt.Sprintf("with error: %s", changeError)
+		state = conf_v1.StateInvalid
+	} else if len(vsConfig.Warnings) > 0 {
+		eventWarningMessage = fmt.Sprintf("with warning(s): %s", formatWarningMessages(vsConfig.Warnings))
+		state = conf_v1.StateWarning
+	}
+
+	// we don't need to report anything if eventWarningMessage is empty
+	// in that case, the resource was deleted because its class became incorrect
+	// (some other Ingress Controller will handle it)
+	if eventWarningMessage != "" {
+		if deleteErr != nil {
+			eventType = api_v1.EventTypeWarning
+			eventTitle = "RejectedWithError"
+			eventWarningMessage = fmt.Sprintf("%s; but was not applied: %v", eventWarningMessage, deleteErr)
+			state = conf_v1.StateInvalid
+		}
+
+		msg := fmt.Sprintf("VirtualServer %s was rejected %s", getResourceKey(&vsConfig.VirtualServer.ObjectMeta), eventWarningMessage)
+		lbc.recorder.Eventf(vsConfig.VirtualServer, eventType, eventTitle, msg)
+
+		if lbc.reportCustomResourceStatusEnabled() {
+			err := lbc.statusUpdater.UpdateVirtualServerStatus(vsConfig.VirtualServer, state, eventTitle, msg)
+			if err != nil {
+				glog.Errorf("Error when updating the status for VirtualServer %v/%v: %v", vsConfig.VirtualServer.Namespace, vsConfig.VirtualServer.Name, err)
+			}
+		}
+	}
+
+	// for delete, no need to report VirtualServerRoutes
+	// for each VSR, a dedicated problem exists
+}
+
+// UpdateIngressStatusAndEventsOnDelete updates the ingress status and events.
+func (lbc *LoadBalancerController) UpdateIngressStatusAndEventsOnDelete(ingConfig *IngressConfiguration, changeError string, deleteErr error) {
+	eventTitle := "Rejected"
+	eventWarningMessage := ""
+
+	// Ingress either became invalid or lost all its hosts
+	if changeError != "" {
+		eventWarningMessage = fmt.Sprintf("with error: %s", changeError)
+	} else if len(ingConfig.Warnings) > 0 {
+		eventWarningMessage = fmt.Sprintf("with warning(s): %s", formatWarningMessages(ingConfig.Warnings))
+	}
+
+	// we don't need to report anything if eventWarningMessage is empty
+	// in that case, the resource was deleted because its class became incorrect
+	// (some other Ingress Controller will handle it)
+	if eventWarningMessage != "" {
+		if deleteErr != nil {
+			eventTitle = "RejectedWithError"
+			eventWarningMessage = fmt.Sprintf("%s; but was not applied: %v", eventWarningMessage, deleteErr)
+		}
+
+		lbc.recorder.Eventf(ingConfig.Ingress, api_v1.EventTypeWarning, eventTitle, "%v was rejected: %v", getResourceKey(&ingConfig.Ingress.ObjectMeta), eventWarningMessage)
+		if lbc.reportStatusEnabled() {
+			err := lbc.statusUpdater.ClearIngressStatus(*ingConfig.Ingress)
+			if err != nil {
+				glog.V(3).Infof("Error clearing Ingress status: %v", err)
+			}
+		}
+	}
+
+	// for delete, no need to report minions
+	// for each minion, a dedicated problem exists
+}
+
+// IsExternalServiceForStatus matches the service specified by the external-service cli arg
+func (lbc *LoadBalancerController) IsExternalServiceForStatus(svc *api_v1.Service) bool {
+	return lbc.statusUpdater.namespace == svc.Namespace && lbc.statusUpdater.externalServiceName == svc.Name
+}
+
+// IsExternalServiceKeyForStatus matches the service key specified by the external-service cli arg
+func (lbc *LoadBalancerController) IsExternalServiceKeyForStatus(key string) bool {
+	externalSvcKey := fmt.Sprintf("%s/%s", lbc.statusUpdater.namespace, lbc.statusUpdater.externalServiceName)
+	return key == externalSvcKey
+}
+
+// AddSyncQueue enqueues the provided item on the sync queue
+func (lbc *LoadBalancerController) AddSyncQueue(item interface{}) {
+	lbc.syncQueue.Enqueue(item)
+}
+
 type namespacedInformer struct {
 	namespace                    string
 	sharedInformerFactory        informers.SharedInformerFactory
@@ -445,11 +662,6 @@ func (lbc *LoadBalancerController) addLeaderHandler(leaderHandler leaderelection
 	if err != nil {
 		glog.V(3).Infof("Error starting LeaderElection: %v", err)
 	}
-}
-
-// AddSyncQueue enqueues the provided item on the sync queue
-func (lbc *LoadBalancerController) AddSyncQueue(item interface{}) {
-	lbc.syncQueue.Enqueue(item)
 }
 
 // addAppProtectPolicyHandler creates dynamic informers for custom appprotect policy resource
@@ -638,97 +850,6 @@ func (lbc *LoadBalancerController) addNamespaceHandler(handlers cache.ResourceEv
 	lbc.namespaceWatcherController = nsInformer
 
 	lbc.cacheSyncs = append(lbc.cacheSyncs, nsInformer.HasSynced)
-}
-
-// Run starts the loadbalancer controller
-func (lbc *LoadBalancerController) Run() {
-	lbc.ctx, lbc.cancel = context.WithCancel(context.Background())
-
-	if lbc.namespaceWatcherController != nil {
-		go lbc.namespaceWatcherController.Run(lbc.ctx.Done())
-	}
-
-	if lbc.spiffeCertFetcher != nil {
-		_, _, err := lbc.spiffeCertFetcher.Start(lbc.ctx)
-		lbc.addInternalRouteServer()
-		if err != nil {
-			glog.Fatal(err)
-		}
-
-		// wait for initial bundle
-		timeoutch := make(chan bool, 1)
-		go func() { time.Sleep(time.Second * 30); timeoutch <- true }()
-		select {
-		case cert := <-lbc.spiffeCertFetcher.CertCh:
-			lbc.syncSVIDRotation(cert)
-		case <-timeoutch:
-			glog.Fatal("Failed to download initial spiffe trust bundle")
-		}
-
-		go func() {
-			for {
-				select {
-				case err := <-lbc.spiffeCertFetcher.WatchErrCh:
-					glog.Errorf("error watching for SVID rotations: %v", err)
-					return
-				case cert := <-lbc.spiffeCertFetcher.CertCh:
-					lbc.syncSVIDRotation(cert)
-				}
-			}
-		}()
-	}
-	if lbc.certManagerController != nil {
-		go lbc.certManagerController.Run(lbc.ctx.Done())
-	}
-	if lbc.externalDNSController != nil {
-		go lbc.externalDNSController.Run(lbc.ctx.Done())
-	}
-	if lbc.leaderElector != nil {
-		go lbc.leaderElector.Run(lbc.ctx)
-	}
-
-	for _, nif := range lbc.namespacedInformers {
-		nif.start()
-	}
-
-	if lbc.watchNginxConfigMaps {
-		go lbc.configMapController.Run(lbc.ctx.Done())
-	}
-
-	if lbc.watchGlobalConfiguration {
-		go lbc.globalConfigurationController.Run(lbc.ctx.Done())
-	}
-	if lbc.watchIngressLink {
-		go lbc.ingressLinkInformer.Run(lbc.ctx.Done())
-	}
-
-	totalCacheSyncs := lbc.cacheSyncs
-
-	for _, nif := range lbc.namespacedInformers {
-		totalCacheSyncs = append(totalCacheSyncs, nif.cacheSyncs...)
-	}
-
-	glog.V(3).Infof("Waiting for %d caches to sync", len(totalCacheSyncs))
-
-	if !cache.WaitForCacheSync(lbc.ctx.Done(), totalCacheSyncs...) {
-		return
-	}
-
-	lbc.preSyncSecrets()
-
-	glog.V(3).Infof("Starting the queue with %d initial elements", lbc.syncQueue.Len())
-
-	go lbc.syncQueue.Run(time.Second, lbc.ctx.Done())
-	<-lbc.ctx.Done()
-}
-
-// Stop shutsdown the load balancer controller
-func (lbc *LoadBalancerController) Stop() {
-	lbc.cancel()
-	for _, nif := range lbc.namespacedInformers {
-		nif.stop()
-	}
-	lbc.syncQueue.Shutdown()
 }
 
 func (nsi *namespacedInformer) start() {
@@ -1913,82 +2034,6 @@ func (lbc *LoadBalancerController) updateTransportServerStatusAndEventsOnDelete(
 	}
 }
 
-// UpdateVirtualServerStatusAndEventsOnDelete updates the virtual server status and events
-func (lbc *LoadBalancerController) UpdateVirtualServerStatusAndEventsOnDelete(vsConfig *VirtualServerConfiguration, changeError string, deleteErr error) {
-	eventType := api_v1.EventTypeWarning
-	eventTitle := "Rejected"
-	eventWarningMessage := ""
-	state := ""
-
-	// VirtualServer either became invalid or lost its host
-	if changeError != "" {
-		eventWarningMessage = fmt.Sprintf("with error: %s", changeError)
-		state = conf_v1.StateInvalid
-	} else if len(vsConfig.Warnings) > 0 {
-		eventWarningMessage = fmt.Sprintf("with warning(s): %s", formatWarningMessages(vsConfig.Warnings))
-		state = conf_v1.StateWarning
-	}
-
-	// we don't need to report anything if eventWarningMessage is empty
-	// in that case, the resource was deleted because its class became incorrect
-	// (some other Ingress Controller will handle it)
-	if eventWarningMessage != "" {
-		if deleteErr != nil {
-			eventType = api_v1.EventTypeWarning
-			eventTitle = "RejectedWithError"
-			eventWarningMessage = fmt.Sprintf("%s; but was not applied: %v", eventWarningMessage, deleteErr)
-			state = conf_v1.StateInvalid
-		}
-
-		msg := fmt.Sprintf("VirtualServer %s was rejected %s", getResourceKey(&vsConfig.VirtualServer.ObjectMeta), eventWarningMessage)
-		lbc.recorder.Eventf(vsConfig.VirtualServer, eventType, eventTitle, msg)
-
-		if lbc.reportCustomResourceStatusEnabled() {
-			err := lbc.statusUpdater.UpdateVirtualServerStatus(vsConfig.VirtualServer, state, eventTitle, msg)
-			if err != nil {
-				glog.Errorf("Error when updating the status for VirtualServer %v/%v: %v", vsConfig.VirtualServer.Namespace, vsConfig.VirtualServer.Name, err)
-			}
-		}
-	}
-
-	// for delete, no need to report VirtualServerRoutes
-	// for each VSR, a dedicated problem exists
-}
-
-// UpdateIngressStatusAndEventsOnDelete updates the ingress status and events.
-func (lbc *LoadBalancerController) UpdateIngressStatusAndEventsOnDelete(ingConfig *IngressConfiguration, changeError string, deleteErr error) {
-	eventTitle := "Rejected"
-	eventWarningMessage := ""
-
-	// Ingress either became invalid or lost all its hosts
-	if changeError != "" {
-		eventWarningMessage = fmt.Sprintf("with error: %s", changeError)
-	} else if len(ingConfig.Warnings) > 0 {
-		eventWarningMessage = fmt.Sprintf("with warning(s): %s", formatWarningMessages(ingConfig.Warnings))
-	}
-
-	// we don't need to report anything if eventWarningMessage is empty
-	// in that case, the resource was deleted because its class became incorrect
-	// (some other Ingress Controller will handle it)
-	if eventWarningMessage != "" {
-		if deleteErr != nil {
-			eventTitle = "RejectedWithError"
-			eventWarningMessage = fmt.Sprintf("%s; but was not applied: %v", eventWarningMessage, deleteErr)
-		}
-
-		lbc.recorder.Eventf(ingConfig.Ingress, api_v1.EventTypeWarning, eventTitle, "%v was rejected: %v", getResourceKey(&ingConfig.Ingress.ObjectMeta), eventWarningMessage)
-		if lbc.reportStatusEnabled() {
-			err := lbc.statusUpdater.ClearIngressStatus(*ingConfig.Ingress)
-			if err != nil {
-				glog.V(3).Infof("Error clearing Ingress status: %v", err)
-			}
-		}
-	}
-
-	// for delete, no need to report minions
-	// for each minion, a dedicated problem exists
-}
-
 func (lbc *LoadBalancerController) updateResourcesStatusAndEvents(resources []Resource, warnings configs.Warnings, operationErr error) {
 	for _, r := range resources {
 		switch impl := r.(type) {
@@ -2390,17 +2435,6 @@ func (lbc *LoadBalancerController) syncService(task task) {
 
 	warnings, updateErr := lbc.configurator.AddOrUpdateResources(resourceExes)
 	lbc.updateResourcesStatusAndEvents(resources, warnings, updateErr)
-}
-
-// IsExternalServiceForStatus matches the service specified by the external-service cli arg
-func (lbc *LoadBalancerController) IsExternalServiceForStatus(svc *api_v1.Service) bool {
-	return lbc.statusUpdater.namespace == svc.Namespace && lbc.statusUpdater.externalServiceName == svc.Name
-}
-
-// IsExternalServiceKeyForStatus matches the service key specified by the external-service cli arg
-func (lbc *LoadBalancerController) IsExternalServiceKeyForStatus(key string) bool {
-	externalSvcKey := fmt.Sprintf("%s/%s", lbc.statusUpdater.namespace, lbc.statusUpdater.externalServiceName)
-	return key == externalSvcKey
 }
 
 // reportStatusEnabled determines if we should attempt to report status for Ingress resources.
@@ -3963,35 +3997,6 @@ func (lbc *LoadBalancerController) getServiceForIngressBackend(backend *networki
 	return nil, fmt.Errorf("service %s doesn't exist", svcKey)
 }
 
-// HasCorrectIngressClass checks if resource ingress class annotation (if exists) or ingressClass string for VS/VSR is matching with Ingress Controller class
-func (lbc *LoadBalancerController) HasCorrectIngressClass(obj interface{}) bool {
-	var class string
-	switch obj := obj.(type) {
-	case *conf_v1.VirtualServer:
-		class = obj.Spec.IngressClass
-	case *conf_v1.VirtualServerRoute:
-		class = obj.Spec.IngressClass
-	case *conf_v1.TransportServer:
-		class = obj.Spec.IngressClass
-	case *conf_v1.Policy:
-		class = obj.Spec.IngressClass
-	case *networking.Ingress:
-		class = obj.Annotations[ingressClassKey]
-		if class == "" && obj.Spec.IngressClassName != nil {
-			class = *obj.Spec.IngressClassName
-		} else if class != "" {
-			// the annotation takes precedence over the field
-			glog.Warningln("Using the DEPRECATED annotation 'kubernetes.io/ingress.class'. The 'ingressClassName' field will be ignored.")
-		}
-		return class == lbc.ingressClass
-
-	default:
-		return false
-	}
-
-	return class == lbc.ingressClass || class == ""
-}
-
 // isHealthCheckEnabled checks if health checks are enabled so we can only query pods if enabled.
 func (lbc *LoadBalancerController) isHealthCheckEnabled(ing *networking.Ingress) bool {
 	if healthCheckEnabled, exists, err := configs.GetMapKeyAsBool(ing.Annotations, "nginx.com/health-checks", ing); exists {
@@ -4202,11 +4207,6 @@ func (lbc *LoadBalancerController) syncDosProtectedResource(task task) {
 
 	lbc.processAppProtectDosChanges(changes)
 	lbc.processAppProtectDosProblems(problems)
-}
-
-// IsNginxReady returns ready status of NGINX
-func (lbc *LoadBalancerController) IsNginxReady() bool {
-	return lbc.isNginxReady
 }
 
 func (lbc *LoadBalancerController) addInternalRouteServer() {
