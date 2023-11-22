@@ -25,7 +25,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nginxinc/kubernetes-ingress/pkg/apis/dos/v1beta1"
 	"golang.org/x/exp/maps"
 
 	"github.com/nginxinc/kubernetes-ingress/internal/k8s/appprotect"
@@ -37,8 +36,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/nginxinc/kubernetes-ingress/internal/k8s/secrets"
 	"github.com/nginxinc/nginx-service-mesh/pkg/spiffe"
-	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -91,13 +88,6 @@ var (
 		Kind:    "IngressLink",
 	}
 )
-
-type podEndpoint struct {
-	Address string
-	PodName string
-	// MeshPodOwner is used for NGINX Service Mesh metrics
-	configs.MeshPodOwner
-}
 
 // LoadBalancerController watches Kubernetes API and
 // reconfigures NGINX via NginxController when needed
@@ -362,7 +352,7 @@ func (lbc *LoadBalancerController) Run() {
 		go func() { time.Sleep(time.Second * 30); timeoutch <- true }()
 		select {
 		case cert := <-lbc.spiffeCertFetcher.CertCh:
-			lbc.syncSVIDRotation(cert)
+			syncSVIDRotation(cert, lbc)
 		case <-timeoutch:
 			glog.Fatal("Failed to download initial spiffe trust bundle")
 		}
@@ -374,7 +364,7 @@ func (lbc *LoadBalancerController) Run() {
 					glog.Errorf("error watching for SVID rotations: %v", err)
 					return
 				case cert := <-lbc.spiffeCertFetcher.CertCh:
-					lbc.syncSVIDRotation(cert)
+					syncSVIDRotation(cert, lbc)
 				}
 			}
 		}()
@@ -559,34 +549,95 @@ func (lbc *LoadBalancerController) AddSyncQueue(item interface{}) {
 	lbc.syncQueue.Enqueue(item)
 }
 
-type namespacedInformer struct {
-	namespace                    string
-	sharedInformerFactory        informers.SharedInformerFactory
-	confSharedInformerFactory    k8s_nginx_informers.SharedInformerFactory
-	secretInformerFactory        informers.SharedInformerFactory
-	dynInformerFactory           dynamicinformer.DynamicSharedInformerFactory
-	ingressLister                storeToIngressLister
-	svcLister                    cache.Store
-	endpointSliceLister          storeToEndpointSliceLister
-	podLister                    indexerToPodLister
-	secretLister                 cache.Store
-	virtualServerLister          cache.Store
-	virtualServerRouteLister     cache.Store
-	appProtectPolicyLister       cache.Store
-	appProtectLogConfLister      cache.Store
-	appProtectDosPolicyLister    cache.Store
-	appProtectDosLogConfLister   cache.Store
-	appProtectDosProtectedLister cache.Store
-	appProtectUserSigLister      cache.Store
-	transportServerLister        cache.Store
-	policyLister                 cache.Store
-	isSecretsEnabledNamespace    bool
-	areCustomResourcesEnabled    bool
-	appProtectEnabled            bool
-	appProtectDosEnabled         bool
-	stopCh                       chan struct{}
-	lock                         sync.RWMutex
-	cacheSyncs                   []cache.InformerSynced
+func (lbc *LoadBalancerController) sync(task task) {
+	if lbc.isNginxReady && lbc.syncQueue.Len() > 1 && !lbc.batchSyncEnabled {
+		lbc.configurator.DisableReloads()
+		lbc.batchSyncEnabled = true
+
+		glog.V(3).Infof("Batch processing %v items", lbc.syncQueue.Len())
+	}
+	glog.V(3).Infof("Syncing %v", task.Key)
+	if lbc.spiffeCertFetcher != nil {
+		lbc.syncLock.Lock()
+		defer lbc.syncLock.Unlock()
+	}
+	if lbc.batchSyncEnabled && task.Kind != endpointslice {
+		lbc.enableBatchReload = true
+	}
+	switch task.Kind {
+	case ingress:
+		syncIngress(task, lbc)
+		lbc.updateIngressMetrics()
+		lbc.updateTransportServerMetrics()
+	case configMap:
+		if lbc.batchSyncEnabled {
+			lbc.updateAllConfigsOnBatch = true
+		}
+		syncConfigMap(task, lbc)
+	case endpointslice:
+		resourcesFound := syncEndpointSlices(task, lbc)
+		if lbc.batchSyncEnabled && resourcesFound {
+			lbc.enableBatchReload = true
+		}
+	case secret:
+		syncSecret(task, lbc)
+	case service:
+		syncService(task, lbc)
+	case namespace:
+		syncNamespace(task, lbc)
+	case virtualserver:
+		syncVirtualServer(task, lbc)
+		lbc.updateVirtualServerMetrics()
+		lbc.updateTransportServerMetrics()
+	case virtualServerRoute:
+		syncVirtualServerRoute(task, lbc)
+		lbc.updateVirtualServerMetrics()
+	case globalConfiguration:
+		syncGlobalConfiguration(task, lbc)
+		lbc.updateTransportServerMetrics()
+		lbc.updateVirtualServerMetrics()
+	case transportserver:
+		syncTransportServer(task, lbc)
+		lbc.updateTransportServerMetrics()
+	case policy:
+		syncPolicy(task, lbc)
+	case appProtectPolicy:
+		syncAppProtectPolicy(task, lbc)
+	case appProtectLogConf:
+		syncAppProtectLogConf(task, lbc)
+	case appProtectUserSig:
+		syncAppProtectUserSig(task, lbc)
+	case appProtectDosPolicy:
+		syncAppProtectDosPolicy(task, lbc)
+	case appProtectDosLogConf:
+		syncAppProtectDosLogConf(task, lbc)
+	case appProtectDosProtectedResource:
+		syncDosProtectedResource(task, lbc)
+	case ingressLink:
+		syncIngressLink(task, lbc)
+	}
+
+	if !lbc.isNginxReady && lbc.syncQueue.Len() == 0 {
+		lbc.configurator.EnableReloads()
+		lbc.updateAllConfigs()
+
+		lbc.isNginxReady = true
+		glog.V(3).Infof("NGINX is ready")
+	}
+
+	if lbc.batchSyncEnabled && lbc.syncQueue.Len() == 0 {
+		lbc.batchSyncEnabled = false
+		lbc.configurator.EnableReloads()
+		if lbc.updateAllConfigsOnBatch {
+			lbc.updateAllConfigs()
+		} else {
+			if err := lbc.configurator.ReloadForBatchUpdates(lbc.enableBatchReload); err != nil {
+				glog.Errorf("error reloading for batch updates: %v", err)
+			}
+		}
+
+		glog.V(3).Infof("Batch sync completed")
+	}
 }
 
 func (lbc *LoadBalancerController) newNamespacedInformer(ns string) *namespacedInformer {
@@ -655,108 +706,6 @@ func (lbc *LoadBalancerController) newNamespacedInformer(ns string) *namespacedI
 	return nsi
 }
 
-// addLeaderHandler adds the handler for leader election to the controller
-func (lbc *LoadBalancerController) addLeaderHandler(leaderHandler leaderelection.LeaderCallbacks) {
-	var err error
-	lbc.leaderElector, err = newLeaderElector(lbc.client, leaderHandler, lbc.controllerNamespace, lbc.leaderElectionLockName)
-	if err != nil {
-		glog.V(3).Infof("Error starting LeaderElection: %v", err)
-	}
-}
-
-// addAppProtectPolicyHandler creates dynamic informers for custom appprotect policy resource
-func (nsi *namespacedInformer) addAppProtectPolicyHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.dynInformerFactory.ForResource(appprotect.PolicyGVR).Informer()
-	informer.AddEventHandler(handlers)
-	nsi.appProtectPolicyLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addAppProtectLogConfHandler creates dynamic informer for custom appprotect logging config resource
-func (nsi *namespacedInformer) addAppProtectLogConfHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.dynInformerFactory.ForResource(appprotect.LogConfGVR).Informer()
-	informer.AddEventHandler(handlers)
-	nsi.appProtectLogConfLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addAppProtectUserSigHandler creates dynamic informer for custom appprotect user defined signature resource
-func (nsi *namespacedInformer) addAppProtectUserSigHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.dynInformerFactory.ForResource(appprotect.UserSigGVR).Informer()
-	informer.AddEventHandler(handlers)
-	nsi.appProtectUserSigLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addAppProtectDosPolicyHandler creates dynamic informers for custom appprotectdos policy resource
-func (nsi *namespacedInformer) addAppProtectDosPolicyHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.dynInformerFactory.ForResource(appprotectdos.DosPolicyGVR).Informer()
-	informer.AddEventHandler(handlers)
-	nsi.appProtectDosPolicyLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addAppProtectDosLogConfHandler creates dynamic informer for custom appprotectdos logging config resource
-func (nsi *namespacedInformer) addAppProtectDosLogConfHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.dynInformerFactory.ForResource(appprotectdos.DosLogConfGVR).Informer()
-	informer.AddEventHandler(handlers)
-	nsi.appProtectDosLogConfLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addAppProtectDosLogConfHandler creates dynamic informers for custom appprotectdos logging config resource
-func (nsi *namespacedInformer) addAppProtectDosProtectedResourceHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.confSharedInformerFactory.Appprotectdos().V1beta1().DosProtectedResources().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.appProtectDosProtectedLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addSecretHandler adds the handler for secrets to the controller
-func (nsi *namespacedInformer) addSecretHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.secretInformerFactory.Core().V1().Secrets().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.secretLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addServiceHandler adds the handler for services to the controller
-func (nsi *namespacedInformer) addServiceHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.sharedInformerFactory.Core().V1().Services().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.svcLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addIngressHandler adds the handler for ingresses to the controller
-func (nsi *namespacedInformer) addIngressHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.sharedInformerFactory.Networking().V1().Ingresses().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.ingressLister = storeToIngressLister{Store: informer.GetStore()}
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addEndpointSliceHandler adds the handler for EndpointSlices to the controller
-func (nsi *namespacedInformer) addEndpointSliceHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.sharedInformerFactory.Discovery().V1().EndpointSlices().Informer()
-	informer.AddEventHandler(handlers)
-	var el storeToEndpointSliceLister
-	el.Store = informer.GetStore()
-	nsi.endpointSliceLister = el
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-// addConfigMapHandler adds the handler for config maps to the controller
 func (lbc *LoadBalancerController) addConfigMapHandler(handlers cache.ResourceEventHandlerFuncs, namespace string) {
 	lbc.configMapLister.Store, lbc.configMapController = cache.NewInformer(
 		cache.NewListWatchFromClient(
@@ -771,71 +720,18 @@ func (lbc *LoadBalancerController) addConfigMapHandler(handlers cache.ResourceEv
 	lbc.cacheSyncs = append(lbc.cacheSyncs, lbc.configMapController.HasSynced)
 }
 
-func (nsi *namespacedInformer) addPodHandler() {
-	informer := nsi.sharedInformerFactory.Core().V1().Pods().Informer()
-	nsi.podLister = indexerToPodLister{Indexer: informer.GetIndexer()}
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-func (nsi *namespacedInformer) addVirtualServerHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.confSharedInformerFactory.K8s().V1().VirtualServers().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.virtualServerLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-func (nsi *namespacedInformer) addVirtualServerRouteHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.confSharedInformerFactory.K8s().V1().VirtualServerRoutes().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.virtualServerRouteLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-func (nsi *namespacedInformer) addPolicyHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.confSharedInformerFactory.K8s().V1().Policies().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.policyLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
-func (lbc *LoadBalancerController) addGlobalConfigurationHandler(handlers cache.ResourceEventHandlerFuncs, namespace string, name string) {
-	lbc.globalConfigurationLister, lbc.globalConfigurationController = cache.NewInformer(
-		cache.NewListWatchFromClient(
-			lbc.confClient.K8sV1().RESTClient(),
-			"globalconfigurations",
-			namespace,
-			fields.Set{"metadata.name": name}.AsSelector()),
-		&conf_v1.GlobalConfiguration{},
-		lbc.resync,
-		handlers,
-	)
-	lbc.cacheSyncs = append(lbc.cacheSyncs, lbc.globalConfigurationController.HasSynced)
-}
-
-func (nsi *namespacedInformer) addTransportServerHandler(handlers cache.ResourceEventHandlerFuncs) {
-	informer := nsi.confSharedInformerFactory.K8s().V1().TransportServers().Informer()
-	informer.AddEventHandler(handlers)
-	nsi.transportServerLister = informer.GetStore()
-
-	nsi.cacheSyncs = append(nsi.cacheSyncs, informer.HasSynced)
-}
-
 func (lbc *LoadBalancerController) addIngressLinkHandler(handlers cache.ResourceEventHandlerFuncs, name string) {
 	optionsModifier := func(options *meta_v1.ListOptions) {
 		options.FieldSelector = fields.Set{"metadata.name": name}.String()
 	}
 
 	informer := dynamicinformer.NewFilteredDynamicInformer(lbc.dynClient, ingressLinkGVR, lbc.controllerNamespace, lbc.resync,
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, optionsModifier)
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, optionsModifier).Informer()
 
-	informer.Informer().AddEventHandlerWithResyncPeriod(handlers, lbc.resync)
+	informer.AddEventHandlerWithResyncPeriod(handlers, lbc.resync)
 
-	lbc.ingressLinkInformer = informer.Informer()
-	lbc.ingressLinkLister = informer.Informer().GetStore()
+	lbc.ingressLinkInformer = informer
+	lbc.ingressLinkLister = informer.GetStore()
 
 	lbc.cacheSyncs = append(lbc.cacheSyncs, lbc.ingressLinkInformer.HasSynced)
 }
@@ -852,24 +748,33 @@ func (lbc *LoadBalancerController) addNamespaceHandler(handlers cache.ResourceEv
 	lbc.cacheSyncs = append(lbc.cacheSyncs, nsInformer.HasSynced)
 }
 
-func (nsi *namespacedInformer) start() {
-	go nsi.sharedInformerFactory.Start(nsi.stopCh)
+func (lbc *LoadBalancerController) addGlobalConfigurationHandler(handlers cache.ResourceEventHandlerFuncs, namespace string, name string) {
+	lbc.globalConfigurationLister, lbc.globalConfigurationController = cache.NewInformer(
+		cache.NewListWatchFromClient(
+			lbc.confClient.K8sV1().RESTClient(),
+			"globalconfigurations",
+			namespace,
+			fields.Set{"metadata.name": name}.AsSelector()),
+		&conf_v1.GlobalConfiguration{},
+		lbc.resync,
+		handlers,
+	)
+	lbc.cacheSyncs = append(lbc.cacheSyncs, lbc.globalConfigurationController.HasSynced)
+}
 
-	if nsi.isSecretsEnabledNamespace {
-		go nsi.secretInformerFactory.Start(nsi.stopCh)
-	}
-
-	if nsi.areCustomResourcesEnabled {
-		go nsi.confSharedInformerFactory.Start(nsi.stopCh)
-	}
-
-	if nsi.appProtectEnabled || nsi.appProtectDosEnabled {
-		go nsi.dynInformerFactory.Start(nsi.stopCh)
+func (lbc *LoadBalancerController) addLeaderHandler(leaderHandler leaderelection.LeaderCallbacks) {
+	var err error
+	lbc.leaderElector, err = newLeaderElector(lbc.client, leaderHandler, lbc.controllerNamespace, lbc.leaderElectionLockName)
+	if err != nil {
+		glog.V(3).Infof("Error starting LeaderElection: %v", err)
 	}
 }
 
-func (nsi *namespacedInformer) stop() {
-	close(nsi.stopCh)
+type podEndpoint struct {
+	Address string
+	PodName string
+	// MeshPodOwner is used for NGINX Service Mesh metrics
+	configs.MeshPodOwner
 }
 
 func (lbc *LoadBalancerController) getNamespacedInformer(ns string) *namespacedInformer {
@@ -888,70 +793,6 @@ func (lbc *LoadBalancerController) getNamespacedInformer(ns string) *namespacedI
 		}
 	}
 	return nsi
-}
-
-func (lbc *LoadBalancerController) syncEndpointSlices(task task) bool {
-	key := task.Key
-	var obj interface{}
-	var endpointSliceExists bool
-	var err error
-	var resourcesFound bool
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, endpointSliceExists, err = lbc.getNamespacedInformer(ns).endpointSliceLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return false
-	}
-
-	if !endpointSliceExists {
-		return false
-	}
-
-	endpointSlice := obj.(*discovery_v1.EndpointSlice)
-	svcResource := lbc.configuration.FindResourcesForService(endpointSlice.Namespace, endpointSlice.Labels["kubernetes.io/service-name"])
-
-	resourceExes := lbc.createExtendedResources(svcResource)
-
-	if len(resourceExes.IngressExes) > 0 {
-		resourcesFound = true
-		glog.V(3).Infof("Updating EndpointSlices for %v", resourceExes.IngressExes)
-		err = lbc.configurator.UpdateEndpoints(resourceExes.IngressExes)
-		if err != nil {
-			glog.Errorf("Error updating EndpointSlices for %v: %v", resourceExes.IngressExes, err)
-		}
-	}
-
-	if len(resourceExes.MergeableIngresses) > 0 {
-		resourcesFound = true
-		glog.V(3).Infof("Updating EndpointSlices for %v", resourceExes.MergeableIngresses)
-		err = lbc.configurator.UpdateEndpointsMergeableIngress(resourceExes.MergeableIngresses)
-		if err != nil {
-			glog.Errorf("Error updating EndpointSlices for %v: %v", resourceExes.MergeableIngresses, err)
-		}
-	}
-
-	if lbc.areCustomResourcesEnabled {
-		if len(resourceExes.VirtualServerExes) > 0 {
-			resourcesFound = true
-			glog.V(3).Infof("Updating EndpointSlices for %v", resourceExes.VirtualServerExes)
-			err := lbc.configurator.UpdateEndpointsForVirtualServers(resourceExes.VirtualServerExes)
-			if err != nil {
-				glog.Errorf("Error updating EndpointSlices for %v: %v", resourceExes.VirtualServerExes, err)
-			}
-		}
-
-		if len(resourceExes.TransportServerExes) > 0 {
-			resourcesFound = true
-			glog.V(3).Infof("Updating EndpointSlices for %v", resourceExes.TransportServerExes)
-			err := lbc.configurator.UpdateEndpointsForTransportServers(resourceExes.TransportServerExes)
-			if err != nil {
-				glog.Errorf("Error updating EndpointSlices for %v: %v", resourceExes.TransportServerExes, err)
-			}
-		}
-	}
-	return resourcesFound
 }
 
 func (lbc *LoadBalancerController) createExtendedResources(resources []Resource) configs.ExtendedResources {
@@ -979,38 +820,6 @@ func (lbc *LoadBalancerController) createExtendedResources(resources []Resource)
 	}
 
 	return result
-}
-
-func (lbc *LoadBalancerController) syncConfigMap(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing configmap %v", key)
-
-	obj, configExists, err := lbc.configMapLister.GetByKey(key)
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-	if configExists {
-		lbc.configMap = obj.(*api_v1.ConfigMap)
-		externalStatusAddress, exists := lbc.configMap.Data["external-status-address"]
-		if exists {
-			lbc.statusUpdater.SaveStatusFromExternalStatus(externalStatusAddress)
-		}
-	} else {
-		lbc.configMap = nil
-	}
-
-	if !lbc.isNginxReady {
-		glog.V(3).Infof("Skipping ConfigMap update because the pod is not ready yet")
-		return
-	}
-
-	if lbc.batchSyncEnabled {
-		glog.V(3).Infof("Skipping ConfigMap update because batch sync is on")
-		return
-	}
-
-	lbc.updateAllConfigs()
 }
 
 func (lbc *LoadBalancerController) updateAllConfigs() {
@@ -1080,157 +889,6 @@ func (lbc *LoadBalancerController) preSyncSecrets() {
 
 			glog.V(3).Infof("Adding Secret: %s/%s", secret.Namespace, secret.Name)
 			lbc.secretStore.AddOrUpdateSecret(secret)
-		}
-	}
-}
-
-func (lbc *LoadBalancerController) sync(task task) {
-	if lbc.isNginxReady && lbc.syncQueue.Len() > 1 && !lbc.batchSyncEnabled {
-		lbc.configurator.DisableReloads()
-		lbc.batchSyncEnabled = true
-
-		glog.V(3).Infof("Batch processing %v items", lbc.syncQueue.Len())
-	}
-	glog.V(3).Infof("Syncing %v", task.Key)
-	if lbc.spiffeCertFetcher != nil {
-		lbc.syncLock.Lock()
-		defer lbc.syncLock.Unlock()
-	}
-	if lbc.batchSyncEnabled && task.Kind != endpointslice {
-		lbc.enableBatchReload = true
-	}
-	switch task.Kind {
-	case ingress:
-		lbc.syncIngress(task)
-		lbc.updateIngressMetrics()
-		lbc.updateTransportServerMetrics()
-	case configMap:
-		if lbc.batchSyncEnabled {
-			lbc.updateAllConfigsOnBatch = true
-		}
-		lbc.syncConfigMap(task)
-	case endpointslice:
-		resourcesFound := lbc.syncEndpointSlices(task)
-		if lbc.batchSyncEnabled && resourcesFound {
-			lbc.enableBatchReload = true
-		}
-	case secret:
-		lbc.syncSecret(task)
-	case service:
-		lbc.syncService(task)
-	case namespace:
-		lbc.syncNamespace(task)
-	case virtualserver:
-		lbc.syncVirtualServer(task)
-		lbc.updateVirtualServerMetrics()
-		lbc.updateTransportServerMetrics()
-	case virtualServerRoute:
-		lbc.syncVirtualServerRoute(task)
-		lbc.updateVirtualServerMetrics()
-	case globalConfiguration:
-		lbc.syncGlobalConfiguration(task)
-		lbc.updateTransportServerMetrics()
-		lbc.updateVirtualServerMetrics()
-	case transportserver:
-		lbc.syncTransportServer(task)
-		lbc.updateTransportServerMetrics()
-	case policy:
-		lbc.syncPolicy(task)
-	case appProtectPolicy:
-		lbc.syncAppProtectPolicy(task)
-	case appProtectLogConf:
-		lbc.syncAppProtectLogConf(task)
-	case appProtectUserSig:
-		lbc.syncAppProtectUserSig(task)
-	case appProtectDosPolicy:
-		lbc.syncAppProtectDosPolicy(task)
-	case appProtectDosLogConf:
-		lbc.syncAppProtectDosLogConf(task)
-	case appProtectDosProtectedResource:
-		lbc.syncDosProtectedResource(task)
-	case ingressLink:
-		lbc.syncIngressLink(task)
-	}
-
-	if !lbc.isNginxReady && lbc.syncQueue.Len() == 0 {
-		lbc.configurator.EnableReloads()
-		lbc.updateAllConfigs()
-
-		lbc.isNginxReady = true
-		glog.V(3).Infof("NGINX is ready")
-	}
-
-	if lbc.batchSyncEnabled && lbc.syncQueue.Len() == 0 {
-		lbc.batchSyncEnabled = false
-		lbc.configurator.EnableReloads()
-		if lbc.updateAllConfigsOnBatch {
-			lbc.updateAllConfigs()
-		} else {
-			if err := lbc.configurator.ReloadForBatchUpdates(lbc.enableBatchReload); err != nil {
-				glog.Errorf("error reloading for batch updates: %v", err)
-			}
-		}
-
-		glog.V(3).Infof("Batch sync completed")
-	}
-}
-
-func (lbc *LoadBalancerController) syncNamespace(task task) {
-	key := task.Key
-	// process namespace and add to / remove from watched namespace list
-	_, exists, err := lbc.namespaceLabeledLister.GetByKey(key)
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	if !exists {
-		// Check if change is because of a new label, or because of a deleted namespace
-		ns, _ := lbc.client.CoreV1().Namespaces().Get(context.TODO(), key, meta_v1.GetOptions{})
-
-		if ns != nil && ns.Status.Phase == api_v1.NamespaceActive {
-			// namespace still exists
-			glog.Infof("Removing Configuration for Unwatched Namespace: %v", key)
-			// Watched label for namespace was removed
-			// delete any now unwatched namespaced informer groups if required
-			nsi := lbc.getNamespacedInformer(key)
-			if nsi != nil {
-				lbc.cleanupUnwatchedNamespacedResources(nsi)
-				delete(lbc.namespacedInformers, key)
-			}
-		} else {
-			glog.Infof("Deleting Watchers for Deleted Namespace: %v", key)
-			nsi := lbc.getNamespacedInformer(key)
-			if nsi != nil {
-				lbc.removeNamespacedInformer(nsi, key)
-			}
-		}
-		if lbc.certManagerController != nil {
-			lbc.certManagerController.RemoveNamespacedInformer(key)
-		}
-		if lbc.externalDNSController != nil {
-			lbc.externalDNSController.RemoveNamespacedInformer(key)
-		}
-	} else {
-		// check if informer group already exists
-		// if not create new namespaced informer group
-		// update cert-manager informer group if required
-		// update external-dns informer group if required
-		glog.V(3).Infof("Adding or Updating Watched Namespace: %v", key)
-		nsi := lbc.getNamespacedInformer(key)
-		if nsi == nil {
-			glog.Infof("Adding New Watched Namespace: %v", key)
-			nsi = lbc.newNamespacedInformer(key)
-			nsi.start()
-		}
-		if lbc.certManagerController != nil {
-			lbc.certManagerController.AddNewNamespacedInformer(key)
-		}
-		if lbc.externalDNSController != nil {
-			lbc.externalDNSController.AddNewNamespacedInformer(key)
-		}
-		if !cache.WaitForCacheSync(nsi.stopCh, nsi.cacheSyncs...) {
-			return
 		}
 	}
 }
@@ -1384,232 +1042,6 @@ func (lbc *LoadBalancerController) cleanupUnwatchedAppDosResources(nsi *namespac
 		lbc.processAppProtectDosChanges(changes)
 		lbc.processAppProtectDosProblems(problems)
 	}
-}
-
-func (lbc *LoadBalancerController) syncIngressLink(task task) {
-	key := task.Key
-	glog.V(2).Infof("Adding, Updating or Deleting IngressLink: %v", key)
-
-	obj, exists, err := lbc.ingressLinkLister.GetByKey(key)
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	if !exists {
-		// IngressLink got removed
-		lbc.statusUpdater.ClearStatusFromIngressLink()
-	} else {
-		// IngressLink is added or updated
-		link := obj.(*unstructured.Unstructured)
-
-		// spec.virtualServerAddress contains the IP of the BIG-IP device
-		ip, found, err := unstructured.NestedString(link.Object, "spec", "virtualServerAddress")
-		if err != nil {
-			glog.Errorf("Failed to get virtualServerAddress from IngressLink %s: %v", key, err)
-			lbc.statusUpdater.ClearStatusFromIngressLink()
-		} else if !found {
-			glog.Errorf("virtualServerAddress is not found in IngressLink %s", key)
-			lbc.statusUpdater.ClearStatusFromIngressLink()
-		} else if ip == "" {
-			glog.Warningf("IngressLink %s has the empty virtualServerAddress field", key)
-			lbc.statusUpdater.ClearStatusFromIngressLink()
-		} else {
-			lbc.statusUpdater.SaveStatusFromIngressLink(ip)
-		}
-	}
-
-	if lbc.reportStatusEnabled() {
-		ingresses := lbc.configuration.GetResourcesWithFilter(resourceFilter{Ingresses: true})
-
-		glog.V(3).Infof("Updating status for %v Ingresses", len(ingresses))
-
-		err := lbc.statusUpdater.UpdateExternalEndpointsForResources(ingresses)
-		if err != nil {
-			glog.Errorf("Error updating ingress status in syncIngressLink: %v", err)
-		}
-	}
-
-	if lbc.areCustomResourcesEnabled && lbc.reportCustomResourceStatusEnabled() {
-		virtualServers := lbc.configuration.GetResourcesWithFilter(resourceFilter{VirtualServers: true})
-
-		glog.V(3).Infof("Updating status for %v VirtualServers", len(virtualServers))
-
-		err := lbc.statusUpdater.UpdateExternalEndpointsForResources(virtualServers)
-		if err != nil {
-			glog.V(3).Infof("Error updating VirtualServer/VirtualServerRoute status in syncIngressLink: %v", err)
-		}
-	}
-}
-
-func (lbc *LoadBalancerController) syncPolicy(task task) {
-	key := task.Key
-	var obj interface{}
-	var polExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, polExists, err = lbc.getNamespacedInformer(ns).policyLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	glog.V(2).Infof("Adding, Updating or Deleting Policy: %v\n", key)
-
-	if polExists && lbc.HasCorrectIngressClass(obj) {
-		pol := obj.(*conf_v1.Policy)
-		err := validation.ValidatePolicy(pol, lbc.isNginxPlus, lbc.enableOIDC, lbc.appProtectEnabled)
-		if err != nil {
-			msg := fmt.Sprintf("Policy %v/%v is invalid and was rejected: %v", pol.Namespace, pol.Name, err)
-			lbc.recorder.Eventf(pol, api_v1.EventTypeWarning, "Rejected", msg)
-
-			if lbc.reportCustomResourceStatusEnabled() {
-				err = lbc.statusUpdater.UpdatePolicyStatus(pol, conf_v1.StateInvalid, "Rejected", msg)
-				if err != nil {
-					glog.V(3).Infof("Failed to update policy %s status: %v", key, err)
-				}
-			}
-		} else {
-			msg := fmt.Sprintf("Policy %v/%v was added or updated", pol.Namespace, pol.Name)
-			lbc.recorder.Eventf(pol, api_v1.EventTypeNormal, "AddedOrUpdated", msg)
-
-			if lbc.reportCustomResourceStatusEnabled() {
-				err = lbc.statusUpdater.UpdatePolicyStatus(pol, conf_v1.StateValid, "AddedOrUpdated", msg)
-				if err != nil {
-					glog.V(3).Infof("Failed to update policy %s status: %v", key, err)
-				}
-			}
-		}
-	}
-
-	// it is safe to ignore the error
-	namespace, name, _ := ParseNamespaceName(key)
-
-	resources := lbc.configuration.FindResourcesForPolicy(namespace, name)
-	resourceExes := lbc.createExtendedResources(resources)
-
-	// Only VirtualServers support policies
-	if len(resourceExes.VirtualServerExes) == 0 {
-		return
-	}
-
-	warnings, updateErr := lbc.configurator.AddOrUpdateVirtualServers(resourceExes.VirtualServerExes)
-	lbc.updateResourcesStatusAndEvents(resources, warnings, updateErr)
-
-	// Note: updating the status of a policy based on a reload is not needed.
-}
-
-func (lbc *LoadBalancerController) syncTransportServer(task task) {
-	key := task.Key
-	var obj interface{}
-	var tsExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, tsExists, err = lbc.getNamespacedInformer(ns).transportServerLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []ResourceChange
-	var problems []ConfigurationProblem
-
-	if !tsExists {
-		glog.V(2).Infof("Deleting TransportServer: %v\n", key)
-		changes, problems = lbc.configuration.DeleteTransportServer(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating TransportServer: %v\n", key)
-		ts := obj.(*conf_v1.TransportServer)
-		changes, problems = lbc.configuration.AddOrUpdateTransportServer(ts)
-	}
-
-	lbc.processChanges(changes)
-	lbc.processProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncGlobalConfiguration(task task) {
-	key := task.Key
-	obj, gcExists, err := lbc.globalConfigurationLister.GetByKey(key)
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []ResourceChange
-	var problems []ConfigurationProblem
-	var validationErr error
-
-	if !gcExists {
-		glog.V(2).Infof("Deleting GlobalConfiguration: %v\n", key)
-
-		changes, problems = lbc.configuration.DeleteGlobalConfiguration()
-	} else {
-		glog.V(2).Infof("Adding or Updating GlobalConfiguration: %v\n", key)
-
-		gc := obj.(*conf_v1.GlobalConfiguration)
-		changes, problems, validationErr = lbc.configuration.AddOrUpdateGlobalConfiguration(gc)
-	}
-
-	updateErr := lbc.processChangesFromGlobalConfiguration(changes)
-
-	if gcExists {
-		eventTitle := "Updated"
-		eventType := api_v1.EventTypeNormal
-		eventMessage := fmt.Sprintf("GlobalConfiguration %s was added or updated", key)
-
-		if validationErr != nil {
-			eventTitle = "Rejected"
-			eventType = api_v1.EventTypeWarning
-			eventMessage = fmt.Sprintf("GlobalConfiguration %s is invalid and was rejected: %v", key, validationErr)
-		}
-
-		if updateErr != nil {
-			eventTitle += "WithError"
-			eventType = api_v1.EventTypeWarning
-			eventMessage = fmt.Sprintf("%s; with reload error: %v", eventMessage, updateErr)
-		}
-
-		gc := obj.(*conf_v1.GlobalConfiguration)
-		lbc.recorder.Eventf(gc, eventType, eventTitle, eventMessage)
-	}
-
-	lbc.processProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncVirtualServer(task task) {
-	key := task.Key
-	var obj interface{}
-	var vsExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, vsExists, err = lbc.getNamespacedInformer(ns).virtualServerLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []ResourceChange
-	var problems []ConfigurationProblem
-
-	if !vsExists {
-		glog.V(2).Infof("Deleting VirtualServer: %v\n", key)
-
-		changes, problems = lbc.configuration.DeleteVirtualServer(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating VirtualServer: %v\n", key)
-
-		vs := obj.(*conf_v1.VirtualServer)
-		changes, problems = lbc.configuration.AddOrUpdateVirtualServer(vs)
-	}
-
-	lbc.processChanges(changes)
-	lbc.processProblems(problems)
 }
 
 func (lbc *LoadBalancerController) processProblems(problems []ConfigurationProblem) {
@@ -2278,69 +1710,6 @@ func (lbc *LoadBalancerController) updateVirtualServerStatusAndEvents(vsConfig *
 	}
 }
 
-func (lbc *LoadBalancerController) syncVirtualServerRoute(task task) {
-	key := task.Key
-	var obj interface{}
-	var exists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, exists, err = lbc.getNamespacedInformer(ns).virtualServerRouteLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []ResourceChange
-	var problems []ConfigurationProblem
-
-	if !exists {
-		glog.V(2).Infof("Deleting VirtualServerRoute: %v\n", key)
-
-		changes, problems = lbc.configuration.DeleteVirtualServerRoute(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating VirtualServerRoute: %v\n", key)
-
-		vsr := obj.(*conf_v1.VirtualServerRoute)
-		changes, problems = lbc.configuration.AddOrUpdateVirtualServerRoute(vsr)
-	}
-
-	lbc.processChanges(changes)
-	lbc.processProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncIngress(task task) {
-	key := task.Key
-	var ing *networking.Ingress
-	var ingExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	ing, ingExists, err = lbc.getNamespacedInformer(ns).ingressLister.GetByKeySafe(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []ResourceChange
-	var problems []ConfigurationProblem
-
-	if !ingExists {
-		glog.V(2).Infof("Deleting Ingress: %v\n", key)
-
-		changes, problems = lbc.configuration.DeleteIngress(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating Ingress: %v\n", key)
-
-		changes, problems = lbc.configuration.AddOrUpdateIngress(ing)
-	}
-
-	lbc.processChanges(changes)
-	lbc.processProblems(problems)
-}
-
 func (lbc *LoadBalancerController) updateIngressMetrics() {
 	counters := lbc.configurator.GetIngressCounts()
 	for nType, count := range counters {
@@ -2363,80 +1732,6 @@ func (lbc *LoadBalancerController) updateTransportServerMetrics() {
 	lbc.metricsCollector.SetTransportServers(metrics.TotalTLSPassthrough, metrics.TotalTCP, metrics.TotalUDP)
 }
 
-func (lbc *LoadBalancerController) syncService(task task) {
-	key := task.Key
-
-	var obj interface{}
-	var exists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, exists, err = lbc.getNamespacedInformer(ns).svcLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	// First case: the service is the external service for the Ingress Controller
-	// In that case we need to update the statuses of all resources
-
-	if lbc.IsExternalServiceKeyForStatus(key) {
-		glog.V(3).Infof("Syncing service %v", key)
-
-		if !exists {
-			// service got removed
-			lbc.statusUpdater.ClearStatusFromExternalService()
-		} else {
-			// service added or updated
-			lbc.statusUpdater.SaveStatusFromExternalService(obj.(*api_v1.Service))
-		}
-
-		if lbc.reportStatusEnabled() {
-			ingresses := lbc.configuration.GetResourcesWithFilter(resourceFilter{Ingresses: true})
-
-			glog.V(3).Infof("Updating status for %v Ingresses", len(ingresses))
-
-			err := lbc.statusUpdater.UpdateExternalEndpointsForResources(ingresses)
-			if err != nil {
-				glog.Errorf("error updating ingress status in syncService: %v", err)
-			}
-		}
-
-		if lbc.areCustomResourcesEnabled && lbc.reportCustomResourceStatusEnabled() {
-			virtualServers := lbc.configuration.GetResourcesWithFilter(resourceFilter{VirtualServers: true})
-
-			glog.V(3).Infof("Updating status for %v VirtualServers", len(virtualServers))
-
-			err := lbc.statusUpdater.UpdateExternalEndpointsForResources(virtualServers)
-			if err != nil {
-				glog.V(3).Infof("error updating VirtualServer/VirtualServerRoute status in syncService: %v", err)
-			}
-		}
-
-		// we don't return here because technically the same service could be used in the second case
-	}
-
-	// Second case: the service is referenced by some resources in the cluster
-
-	// it is safe to ignore the error
-	namespace, name, _ := ParseNamespaceName(key)
-
-	resources := lbc.configuration.FindResourcesForService(namespace, name)
-
-	if len(resources) == 0 {
-		return
-	}
-	glog.V(3).Infof("Syncing service %v", key)
-
-	glog.V(3).Infof("Updating %v resources", len(resources))
-
-	resourceExes := lbc.createExtendedResources(resources)
-
-	warnings, updateErr := lbc.configurator.AddOrUpdateResources(resourceExes)
-	lbc.updateResourcesStatusAndEvents(resources, warnings, updateErr)
-}
-
 // reportStatusEnabled determines if we should attempt to report status for Ingress resources.
 func (lbc *LoadBalancerController) reportStatusEnabled() bool {
 	if lbc.reportIngressStatus {
@@ -2455,67 +1750,6 @@ func (lbc *LoadBalancerController) reportCustomResourceStatusEnabled() bool {
 	}
 
 	return true
-}
-
-func (lbc *LoadBalancerController) syncSecret(task task) {
-	key := task.Key
-	var obj interface{}
-	var secrExists bool
-	var err error
-
-	namespace, name, err := ParseNamespaceName(key)
-	if err != nil {
-		glog.Warningf("Secret key %v is invalid: %v", key, err)
-		return
-	}
-	obj, secrExists, err = lbc.getNamespacedInformer(namespace).secretLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	resources := lbc.configuration.FindResourcesForSecret(namespace, name)
-
-	if lbc.areCustomResourcesEnabled {
-		secretPols := lbc.getPoliciesForSecret(namespace, name)
-		for _, pol := range secretPols {
-			resources = append(resources, lbc.configuration.FindResourcesForPolicy(pol.Namespace, pol.Name)...)
-		}
-
-		resources = removeDuplicateResources(resources)
-	}
-
-	glog.V(2).Infof("Found %v Resources with Secret %v", len(resources), key)
-
-	if !secrExists {
-		lbc.secretStore.DeleteSecret(key)
-
-		glog.V(2).Infof("Deleting Secret: %v\n", key)
-
-		if len(resources) > 0 {
-			lbc.handleRegularSecretDeletion(resources)
-		}
-		if lbc.isSpecialSecret(key) {
-			glog.Warningf("A special TLS Secret %v was removed. Retaining the Secret.", key)
-		}
-		return
-	}
-
-	glog.V(2).Infof("Adding / Updating Secret: %v\n", key)
-
-	secret := obj.(*api_v1.Secret)
-
-	lbc.secretStore.AddOrUpdateSecret(secret)
-
-	if lbc.isSpecialSecret(key) {
-		lbc.handleSpecialSecretUpdate(secret)
-		// we don't return here in case the special secret is also used in resources.
-	}
-
-	if len(resources) > 0 {
-		lbc.handleSecretUpdate(secret, resources)
-	}
 }
 
 func removeDuplicateResources(resources []Resource) []Resource {
@@ -2866,13 +2100,13 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 	ingEx.PodsByIP = make(map[string]configs.PodInfo)
 
 	if ing.Spec.DefaultBackend != nil {
-		podEndps := []podEndpoint{}
+		var podEndpoints []podEndpoint
 		var external bool
 		svc, err := lbc.getServiceForIngressBackend(ing.Spec.DefaultBackend, ing.Namespace)
 		if err != nil {
 			glog.V(3).Infof("Error getting service %v: %v", ing.Spec.DefaultBackend.Service.Name, err)
 		} else {
-			podEndps, external, err = lbc.getEndpointsForIngressBackend(ing.Spec.DefaultBackend, svc)
+			podEndpoints, external, err = lbc.getEndpointsForIngressBackend(ing.Spec.DefaultBackend, svc)
 			if err == nil && external && lbc.isNginxPlus {
 				ingEx.ExternalNameSvcs[svc.Name] = true
 			}
@@ -2882,7 +2116,7 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 			glog.Warningf("Error retrieving endpoints for the service %v: %v", ing.Spec.DefaultBackend.Service.Name, err)
 		}
 
-		endps := getIPAddressesFromEndpoints(podEndps)
+		endps := getIPAddressesFromEndpoints(podEndpoints)
 
 		// endps is empty if there was any error before this point
 		ingEx.Endpoints[ing.Spec.DefaultBackend.Service.Name+configs.GetBackendPortAsString(ing.Spec.DefaultBackend.Service.Port)] = endps
@@ -2895,7 +2129,7 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 		}
 
 		if (lbc.isNginxPlus && lbc.isPrometheusEnabled) || lbc.isLatencyMetricsEnabled {
-			for _, endpoint := range podEndps {
+			for _, endpoint := range podEndpoints {
 				ingEx.PodsByIP[endpoint.Address] = configs.PodInfo{
 					Name:         endpoint.PodName,
 					MeshPodOwner: endpoint.MeshPodOwner,
@@ -2916,7 +2150,7 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 		}
 
 		for _, path := range rule.HTTP.Paths {
-			podEndps := []podEndpoint{}
+			var podEndpoints []podEndpoint
 			if validMinionPaths != nil && !validMinionPaths[path.Path] {
 				glog.V(3).Infof("Skipping path %s for minion Ingress %s", path.Path, ing.Name)
 				continue
@@ -2927,7 +2161,7 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 			if err != nil {
 				glog.V(3).Infof("Error getting service %v: %v", &path.Backend.Service.Name, err)
 			} else {
-				podEndps, external, err = lbc.getEndpointsForIngressBackend(&path.Backend, svc)
+				podEndpoints, external, err = lbc.getEndpointsForIngressBackend(&path.Backend, svc)
 				if err == nil && external && lbc.isNginxPlus {
 					ingEx.ExternalNameSvcs[svc.Name] = true
 				}
@@ -2937,7 +2171,7 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 				glog.Warningf("Error retrieving endpoints for the service %v: %v", path.Backend.Service.Name, err)
 			}
 
-			endps := getIPAddressesFromEndpoints(podEndps)
+			endps := getIPAddressesFromEndpoints(podEndpoints)
 
 			// endps is empty if there was any error before this point
 			ingEx.Endpoints[path.Backend.Service.Name+configs.GetBackendPortAsString(path.Backend.Service.Port)] = endps
@@ -2951,7 +2185,7 @@ func (lbc *LoadBalancerController) createIngressEx(ing *networking.Ingress, vali
 			}
 
 			if lbc.isNginxPlus || lbc.isLatencyMetricsEnabled {
-				for _, endpoint := range podEndps {
+				for _, endpoint := range podEndpoints {
 					ingEx.PodsByIP[endpoint.Address] = configs.PodInfo{
 						Name:         endpoint.PodName,
 						MeshPodOwner: endpoint.MeshPodOwner,
@@ -3439,10 +2673,7 @@ func (lbc *LoadBalancerController) addOIDCSecretRefs(secretRefs map[string]*secr
 }
 
 // addWAFPolicyRefs ensures the app protect resources that are referenced in policies exist.
-func (lbc *LoadBalancerController) addWAFPolicyRefs(
-	apPolRef, logConfRef map[string]*unstructured.Unstructured,
-	policies []*conf_v1.Policy,
-) error {
+func (lbc *LoadBalancerController) addWAFPolicyRefs(apPolRef, logConfRef map[string]*unstructured.Unstructured, policies []*conf_v1.Policy) error {
 	for _, pol := range policies {
 		if pol.Spec.WAF == nil {
 			continue
@@ -4010,203 +3241,6 @@ func (lbc *LoadBalancerController) isHealthCheckEnabled(ing *networking.Ingress)
 
 func formatWarningMessages(w []string) string {
 	return strings.Join(w, "; ")
-}
-
-func (lbc *LoadBalancerController) syncSVIDRotation(svidResponse *workloadapi.X509Context) {
-	lbc.syncLock.Lock()
-	defer lbc.syncLock.Unlock()
-	glog.V(3).Info("Rotating SPIFFE Certificates")
-	err := lbc.configurator.AddOrUpdateSpiffeCerts(svidResponse)
-	if err != nil {
-		glog.Errorf("failed to rotate SPIFFE certificates: %v", err)
-	}
-}
-
-func (lbc *LoadBalancerController) syncAppProtectPolicy(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing AppProtectPolicy %v", key)
-
-	var obj interface{}
-	var polExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, polExists, err = lbc.getNamespacedInformer(ns).appProtectPolicyLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []appprotect.Change
-	var problems []appprotect.Problem
-
-	if !polExists {
-		glog.V(2).Infof("Deleting AppProtectPolicy: %v\n", key)
-
-		changes, problems = lbc.appProtectConfiguration.DeletePolicy(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating AppProtectPolicy: %v\n", key)
-
-		changes, problems = lbc.appProtectConfiguration.AddOrUpdatePolicy(obj.(*unstructured.Unstructured))
-	}
-
-	lbc.processAppProtectChanges(changes)
-	lbc.processAppProtectProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncAppProtectLogConf(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing AppProtectLogConf %v", key)
-	var obj interface{}
-	var confExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, confExists, err = lbc.getNamespacedInformer(ns).appProtectLogConfLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []appprotect.Change
-	var problems []appprotect.Problem
-
-	if !confExists {
-		glog.V(2).Infof("Deleting AppProtectLogConf: %v\n", key)
-
-		changes, problems = lbc.appProtectConfiguration.DeleteLogConf(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating AppProtectLogConf: %v\n", key)
-
-		changes, problems = lbc.appProtectConfiguration.AddOrUpdateLogConf(obj.(*unstructured.Unstructured))
-	}
-
-	lbc.processAppProtectChanges(changes)
-	lbc.processAppProtectProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncAppProtectUserSig(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing AppProtectUserSig %v", key)
-	var obj interface{}
-	var sigExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, sigExists, err = lbc.getNamespacedInformer(ns).appProtectUserSigLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var change appprotect.UserSigChange
-	var problems []appprotect.Problem
-
-	if !sigExists {
-		glog.V(2).Infof("Deleting AppProtectUserSig: %v\n", key)
-
-		change, problems = lbc.appProtectConfiguration.DeleteUserSig(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating AppProtectUserSig: %v\n", key)
-
-		change, problems = lbc.appProtectConfiguration.AddOrUpdateUserSig(obj.(*unstructured.Unstructured))
-	}
-
-	lbc.processAppProtectUserSigChange(change)
-	lbc.processAppProtectProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncAppProtectDosPolicy(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing AppProtectDosPolicy %v", key)
-	var obj interface{}
-	var polExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, polExists, err = lbc.getNamespacedInformer(ns).appProtectDosPolicyLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []appprotectdos.Change
-	var problems []appprotectdos.Problem
-
-	if !polExists {
-		glog.V(2).Infof("Deleting APDosPolicy: %v\n", key)
-		changes, problems = lbc.dosConfiguration.DeletePolicy(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating APDosPolicy: %v\n", key)
-		changes, problems = lbc.dosConfiguration.AddOrUpdatePolicy(obj.(*unstructured.Unstructured))
-	}
-
-	lbc.processAppProtectDosChanges(changes)
-	lbc.processAppProtectDosProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncAppProtectDosLogConf(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing APDosLogConf %v", key)
-	var obj interface{}
-	var confExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, confExists, err = lbc.getNamespacedInformer(ns).appProtectDosLogConfLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []appprotectdos.Change
-	var problems []appprotectdos.Problem
-
-	if !confExists {
-		glog.V(2).Infof("Deleting APDosLogConf: %v\n", key)
-		changes, problems = lbc.dosConfiguration.DeleteLogConf(key)
-	} else {
-		glog.V(2).Infof("Adding or Updating APDosLogConf: %v\n", key)
-		changes, problems = lbc.dosConfiguration.AddOrUpdateLogConf(obj.(*unstructured.Unstructured))
-	}
-
-	lbc.processAppProtectDosChanges(changes)
-	lbc.processAppProtectDosProblems(problems)
-}
-
-func (lbc *LoadBalancerController) syncDosProtectedResource(task task) {
-	key := task.Key
-	glog.V(3).Infof("Syncing DosProtectedResource %v", key)
-	var obj interface{}
-	var confExists bool
-	var err error
-
-	ns, _, _ := cache.SplitMetaNamespaceKey(key)
-	obj, confExists, err = lbc.getNamespacedInformer(ns).appProtectDosProtectedLister.GetByKey(key)
-
-	if err != nil {
-		lbc.syncQueue.Requeue(task, err)
-		return
-	}
-
-	var changes []appprotectdos.Change
-	var problems []appprotectdos.Problem
-
-	if confExists {
-		glog.V(2).Infof("Adding or Updating DosProtectedResource: %v\n", key)
-		changes, problems = lbc.dosConfiguration.AddOrUpdateDosProtectedResource(obj.(*v1beta1.DosProtectedResource))
-	} else {
-		glog.V(2).Infof("Deleting DosProtectedResource: %v\n", key)
-		changes, problems = lbc.dosConfiguration.DeleteProtectedResource(key)
-	}
-
-	lbc.processAppProtectDosChanges(changes)
-	lbc.processAppProtectDosProblems(problems)
 }
 
 func (lbc *LoadBalancerController) addInternalRouteServer() {
