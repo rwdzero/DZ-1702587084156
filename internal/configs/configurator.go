@@ -109,31 +109,44 @@ type metricLabelsIndex struct {
 // This allows the Ingress Controller to incrementally build the NGINX configuration during the IC start and
 // then apply it at the end of the start.
 type Configurator struct {
-	nginxManager            nginx.Manager
-	staticCfgParams         *StaticConfigParams
-	cfgParams               *ConfigParams
-	templateExecutor        *version1.TemplateExecutor
-	templateExecutorV2      *version2.TemplateExecutor
-	ingresses               map[string]*IngressEx
-	minions                 map[string]map[string]bool
-	virtualServers          map[string]*VirtualServerEx
-	transportServers        map[string]*TransportServerEx
-	tlsPassthroughPairs     map[string]tlsPassthroughPair
-	isWildcardEnabled       bool
-	isPlus                  bool
-	labelUpdater            collector.LabelUpdater
-	metricLabelsIndex       *metricLabelsIndex
-	isPrometheusEnabled     bool
-	latencyCollector        latCollector.LatencyCollector
-	isLatencyMetricsEnabled bool
-	isReloadsEnabled        bool
+	nginxManager              nginx.Manager
+	staticCfgParams           *StaticConfigParams
+	cfgParams                 *ConfigParams
+	templateExecutor          *version1.TemplateExecutor
+	templateExecutorV2        *version2.TemplateExecutor
+	ingresses                 map[string]*IngressEx
+	minions                   map[string]map[string]bool
+	virtualServers            map[string]*VirtualServerEx
+	transportServers          map[string]*TransportServerEx
+	tlsPassthroughPairs       map[string]tlsPassthroughPair
+	isWildcardEnabled         bool
+	isPlus                    bool
+	labelUpdater              collector.LabelUpdater
+	metricLabelsIndex         *metricLabelsIndex
+	isPrometheusEnabled       bool
+	latencyCollector          latCollector.LatencyCollector
+	isLatencyMetricsEnabled   bool
+	isReloadsEnabled          bool
+	isDynamicSSLReloadEnabled bool
+}
+
+type ConfiguratorParams struct {
+	NginxManager              nginx.Manager
+	StaticCfgParams           *StaticConfigParams
+	Config                    *ConfigParams
+	TemplateExecutor          *version1.TemplateExecutor
+	TemplateExecutorV2        *version2.TemplateExecutor
+	LabelUpdater              collector.LabelUpdater
+	LatencyCollector          latCollector.LatencyCollector
+	IsPlus                    bool
+	IsPrometheusEnabled       bool
+	IsWildcardEnabled         bool
+	IsLatencyMetricsEnabled   bool
+	IsDynamicSSLReloadEnabled bool
 }
 
 // NewConfigurator creates a new Configurator.
-func NewConfigurator(nginxManager nginx.Manager, staticCfgParams *StaticConfigParams, config *ConfigParams,
-	templateExecutor *version1.TemplateExecutor, templateExecutorV2 *version2.TemplateExecutor, isPlus bool, isWildcardEnabled bool,
-	labelUpdater collector.LabelUpdater, isPrometheusEnabled bool, latencyCollector latCollector.LatencyCollector, isLatencyMetricsEnabled bool,
-) *Configurator {
+func NewConfigurator(p ConfiguratorParams) *Configurator {
 	metricLabelsIndex := &metricLabelsIndex{
 		ingressUpstreams:             make(map[string][]string),
 		virtualServerUpstreams:       make(map[string][]string),
@@ -147,24 +160,25 @@ func NewConfigurator(nginxManager nginx.Manager, staticCfgParams *StaticConfigPa
 	}
 
 	cnf := Configurator{
-		nginxManager:            nginxManager,
-		staticCfgParams:         staticCfgParams,
-		cfgParams:               config,
-		ingresses:               make(map[string]*IngressEx),
-		virtualServers:          make(map[string]*VirtualServerEx),
-		transportServers:        make(map[string]*TransportServerEx),
-		templateExecutor:        templateExecutor,
-		templateExecutorV2:      templateExecutorV2,
-		minions:                 make(map[string]map[string]bool),
-		tlsPassthroughPairs:     make(map[string]tlsPassthroughPair),
-		isPlus:                  isPlus,
-		isWildcardEnabled:       isWildcardEnabled,
-		labelUpdater:            labelUpdater,
-		metricLabelsIndex:       metricLabelsIndex,
-		isPrometheusEnabled:     isPrometheusEnabled,
-		latencyCollector:        latencyCollector,
-		isLatencyMetricsEnabled: isLatencyMetricsEnabled,
-		isReloadsEnabled:        false,
+		nginxManager:              p.NginxManager,
+		staticCfgParams:           p.StaticCfgParams,
+		cfgParams:                 p.Config,
+		ingresses:                 make(map[string]*IngressEx),
+		virtualServers:            make(map[string]*VirtualServerEx),
+		transportServers:          make(map[string]*TransportServerEx),
+		templateExecutor:          p.TemplateExecutor,
+		templateExecutorV2:        p.TemplateExecutorV2,
+		minions:                   make(map[string]map[string]bool),
+		tlsPassthroughPairs:       make(map[string]tlsPassthroughPair),
+		isPlus:                    p.IsPlus,
+		isWildcardEnabled:         p.IsWildcardEnabled,
+		labelUpdater:              p.LabelUpdater,
+		metricLabelsIndex:         metricLabelsIndex,
+		isPrometheusEnabled:       p.IsPrometheusEnabled,
+		latencyCollector:          p.LatencyCollector,
+		isLatencyMetricsEnabled:   p.IsLatencyMetricsEnabled,
+		isDynamicSSLReloadEnabled: p.IsDynamicSSLReloadEnabled,
+		isReloadsEnabled:          false,
 	}
 	return &cnf
 }

@@ -41,10 +41,20 @@ func createTestConfigurator(t *testing.T) *Configurator {
 	}
 
 	manager := nginx.NewFakeManager("/etc/nginx")
-	cnf, err := NewConfigurator(manager, createTestStaticConfigParams(), NewDefaultConfigParams(false), templateExecutor, templateExecutorV2, false, false, nil, false, nil, false), nil
-	if err != nil {
-		t.Fatal(err)
-	}
+	cnf := NewConfigurator(ConfiguratorParams{
+		NginxManager:              manager,
+		StaticCfgParams:           createTestStaticConfigParams(),
+		Config:                    NewDefaultConfigParams(false),
+		TemplateExecutor:          templateExecutor,
+		TemplateExecutorV2:        templateExecutorV2,
+		LatencyCollector:          nil,
+		LabelUpdater:              nil,
+		IsPlus:                    false,
+		IsWildcardEnabled:         false,
+		IsPrometheusEnabled:       false,
+		IsLatencyMetricsEnabled:   false,
+		IsDynamicSSLReloadEnabled: false,
+	})
 	cnf.isReloadsEnabled = true
 	return cnf
 }
@@ -62,10 +72,20 @@ func createTestConfiguratorInvalidIngressTemplate(t *testing.T) *Configurator {
 	}
 
 	manager := nginx.NewFakeManager("/etc/nginx")
-	cnf, err := NewConfigurator(manager, createTestStaticConfigParams(), NewDefaultConfigParams(false), templateExecutor, &version2.TemplateExecutor{}, false, false, nil, false, nil, false), nil
-	if err != nil {
-		t.Fatal(err)
-	}
+	cnf := NewConfigurator(ConfiguratorParams{
+		NginxManager:              manager,
+		StaticCfgParams:           createTestStaticConfigParams(),
+		Config:                    NewDefaultConfigParams(false),
+		TemplateExecutor:          templateExecutor,
+		TemplateExecutorV2:        &version2.TemplateExecutor{},
+		LatencyCollector:          nil,
+		LabelUpdater:              nil,
+		IsPlus:                    false,
+		IsWildcardEnabled:         false,
+		IsPrometheusEnabled:       false,
+		IsLatencyMetricsEnabled:   false,
+		IsDynamicSSLReloadEnabled: false,
+	})
 	cnf.isReloadsEnabled = true
 	return cnf
 }
