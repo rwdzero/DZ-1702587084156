@@ -512,7 +512,7 @@ Default `false`.
 
 <a name="cmdoption-disable-ipv6"></a>
 
-### -default-http-listener-port
+<!-- ### -default-http-listener-port
 
 Sets the port for the HTTP `default_server` listener.
 
@@ -526,4 +526,4 @@ Sets the port for the HTTPS `default_server` listener.
 
 Default `443`.
 
-<a name="cmdoption-default-https-listener-port"></a>
+<a name="cmdoption-default-https-listener-port"></a> -->
