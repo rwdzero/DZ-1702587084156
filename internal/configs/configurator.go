@@ -1728,3 +1728,7 @@ func (cnf *Configurator) AddOrUpdateSecret(secret *api_v1.Secret) string {
 func (cnf *Configurator) DeleteSecret(key string) {
 	cnf.nginxManager.DeleteSecret(keyToFileName(key))
 }
+
+func (cnf *Configurator) DynamicSSLReloadEnabled() bool {
+	return cnf.isDynamicSSLReloadEnabled
+}

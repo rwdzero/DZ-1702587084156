@@ -199,7 +199,7 @@ var (
 
 	defaultHTTPSListenerPort = flag.Int("default-https-listener-port", 443, "Sets a custom port for the HTTPS `default_server`. [1024 - 65535]")
 
-	dynamicSSLReload = flag.Bool(dynamicSSLReloadParam, false, "Enable reloading of SSL Certificates without restarting the NGINX process. Requires -nginx-plus")
+	dynamicSSLReload = flag.Bool(dynamicSSLReloadParam, true, "Enable reloading of SSL Certificates without restarting the NGINX process. Requires -nginx-plus")
 
 	startupCheckFn func() error
 )
@@ -277,7 +277,7 @@ func parseFlags() {
 	}
 
 	if *dynamicSSLReload && !*nginxPlus {
-		glog.Warningf("%s flag requires -nginx-plus and will not be enabled", dynamicSSLReloadParam)
+		glog.V(3).Infof("%s flag requires -nginx-plus and will not be enabled", dynamicSSLReloadParam)
 		*dynamicSSLReload = false
 	}
 }
