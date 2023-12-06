@@ -473,7 +473,16 @@ func TestGenerateNginxCfgForMergeableIngresses(t *testing.T) {
 
 	configParams := NewDefaultConfigParams(isPlus)
 
-	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, nil, nil, configParams, false, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngresses,
+		apResources:          nil,
+		dosResource:          nil,
+		baseCfgParams:        configParams,
+		isPlus:               false,
+		isResolverConfigured: false,
+		staticParams:         &StaticConfigParams{},
+		isWildcardEnabled:    false,
+	})
 
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfgForMergeableIngresses() returned unexpected result (-want +got):\n%s", diff)
@@ -498,7 +507,16 @@ func TestGenerateNginxConfigForCrossNamespaceMergeableIngresses(t *testing.T) {
 	expected := createExpectedConfigForCrossNamespaceMergeableCafeIngress()
 	configParams := NewDefaultConfigParams(false)
 
-	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, nil, nil, configParams, false, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngresses,
+		apResources:          nil,
+		dosResource:          nil,
+		baseCfgParams:        configParams,
+		isPlus:               false,
+		isResolverConfigured: false,
+		staticParams:         &StaticConfigParams{},
+		isWildcardEnabled:    false,
+	})
 
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfgForMergeableIngresses() returned unexpected result (-want +got):\n%s", diff)
@@ -563,7 +581,16 @@ func TestGenerateNginxCfgForMergeableIngressesForJWT(t *testing.T) {
 	minionJwtKeyFileNames[objectMetaToFileName(&mergeableIngresses.Minions[0].Ingress.ObjectMeta)] = "/etc/nginx/secrets/default-coffee-jwk"
 	configParams := NewDefaultConfigParams(isPlus)
 
-	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, nil, nil, configParams, isPlus, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngresses,
+		apResources:          nil,
+		dosResource:          nil,
+		baseCfgParams:        configParams,
+		isPlus:               isPlus,
+		isResolverConfigured: false,
+		staticParams:         &StaticConfigParams{},
+		isWildcardEnabled:    false,
+	})
 
 	if !reflect.DeepEqual(result.Servers[0].JWTAuth, expected.Servers[0].JWTAuth) {
 		t.Errorf("generateNginxCfgForMergeableIngresses returned \n%v,  but expected \n%v", result.Servers[0].JWTAuth, expected.Servers[0].JWTAuth)
@@ -614,7 +641,16 @@ func TestGenerateNginxCfgForMergeableIngressesForBasicAuth(t *testing.T) {
 
 	configParams := NewDefaultConfigParams(isPlus)
 
-	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, nil, nil, configParams, isPlus, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngresses,
+		apResources:          nil,
+		dosResource:          nil,
+		baseCfgParams:        configParams,
+		isPlus:               isPlus,
+		isResolverConfigured: false,
+		staticParams:         &StaticConfigParams{},
+		isWildcardEnabled:    false,
+	})
 
 	if !reflect.DeepEqual(result.Servers[0].BasicAuth, expected.Servers[0].BasicAuth) {
 		t.Errorf("generateNginxCfgForMergeableIngresses returned \n%v,  but expected \n%v", result.Servers[0].BasicAuth, expected.Servers[0].BasicAuth)
@@ -1602,7 +1638,16 @@ func TestGenerateNginxCfgForMergeableIngressesForAppProtect(t *testing.T) {
 	expected.Servers[0].AppProtectLogEnable = "on"
 	expected.Ingress.Annotations = mergeableIngresses.Master.Ingress.Annotations
 
-	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, apResources, nil, configParams, isPlus, false, staticCfgParams, false)
+	result, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngresses,
+		apResources:          apResources,
+		dosResource:          nil,
+		baseCfgParams:        configParams,
+		isPlus:               isPlus,
+		isResolverConfigured: false,
+		staticParams:         staticCfgParams,
+		isWildcardEnabled:    false,
+	})
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfgForMergeableIngresses() returned unexpected result (-want +got):\n%s", diff)
 	}
@@ -1685,7 +1730,7 @@ func TestGenerateNginxCfgForMergeableIngressesForAppProtectDos(t *testing.T) {
 
 	isPlus := true
 	configParams := NewDefaultConfigParams(isPlus)
-	apRes := &appProtectDosResource{
+	dosResource := &appProtectDosResource{
 		AppProtectDosEnable:       "on",
 		AppProtectDosName:         "dos.example.com",
 		AppProtectDosMonitorURI:   "monitor-name",
@@ -1708,7 +1753,16 @@ func TestGenerateNginxCfgForMergeableIngressesForAppProtectDos(t *testing.T) {
 	expected.Servers[0].AppProtectDosAccessLogDst = "access-log-dest"
 	expected.Ingress.Annotations = mergeableIngresses.Master.Ingress.Annotations
 
-	result, warnings := generateNginxCfgForMergeableIngresses(mergeableIngresses, nil, apRes, configParams, isPlus, false, staticCfgParams, false)
+	result, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngresses,
+		apResources:          nil,
+		dosResource:          dosResource,
+		baseCfgParams:        configParams,
+		isPlus:               isPlus,
+		isResolverConfigured: false,
+		staticParams:         staticCfgParams,
+		isWildcardEnabled:    false,
+	})
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfgForMergeableIngresses() returned unexpected result (-want +got):\n%s", diff)
 	}

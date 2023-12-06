@@ -582,10 +582,7 @@ func upstreamMapToSlice(upstreams map[string]version1.Upstream) []version1.Upstr
 	return result
 }
 
-func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, apResources *AppProtectResources,
-	dosResource *appProtectDosResource, baseCfgParams *ConfigParams, isPlus bool, isResolverConfigured bool,
-	staticParams *StaticConfigParams, isWildcardEnabled bool,
-) (version1.IngressNginxConfig, Warnings) {
+func generateNginxCfgForMergeableIngresses(p NginxCfgParams) (version1.IngressNginxConfig, Warnings) {
 	var masterServer version1.Server
 	var locations []version1.Location
 	var upstreams []version1.Upstream
@@ -593,33 +590,33 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 	var keepalive string
 
 	// replace master with a deepcopy because we will modify it
-	originalMaster := mergeableIngs.Master.Ingress
-	mergeableIngs.Master.Ingress = mergeableIngs.Master.Ingress.DeepCopy()
+	originalMaster := p.mergeableIngs.Master.Ingress
+	p.mergeableIngs.Master.Ingress = p.mergeableIngs.Master.Ingress.DeepCopy()
 
-	removedAnnotations := filterMasterAnnotations(mergeableIngs.Master.Ingress.Annotations)
+	removedAnnotations := filterMasterAnnotations(p.mergeableIngs.Master.Ingress.Annotations)
 	if len(removedAnnotations) != 0 {
 		glog.Errorf("Ingress Resource %v/%v with the annotation 'nginx.org/mergeable-ingress-type' set to 'master' cannot contain the '%v' annotation(s). They will be ignored",
-			mergeableIngs.Master.Ingress.Namespace, mergeableIngs.Master.Ingress.Name, strings.Join(removedAnnotations, ","))
+			p.mergeableIngs.Master.Ingress.Namespace, p.mergeableIngs.Master.Ingress.Name, strings.Join(removedAnnotations, ","))
 	}
 	isMinion := false
 
 	masterNginxCfg, warnings := generateNginxCfg(NginxCfgParams{
-		staticParams:         staticParams,
-		ingEx:                mergeableIngs.Master,
-		apResources:          apResources,
-		dosResource:          dosResource,
+		staticParams:         p.staticParams,
+		ingEx:                p.mergeableIngs.Master,
+		apResources:          p.apResources,
+		dosResource:          p.dosResource,
 		isMinion:             isMinion,
-		isPlus:               isPlus,
-		baseCfgParams:        baseCfgParams,
-		isResolverConfigured: isResolverConfigured,
-		isWildcardEnabled:    isWildcardEnabled,
+		isPlus:               p.isPlus,
+		baseCfgParams:        p.baseCfgParams,
+		isResolverConfigured: p.isResolverConfigured,
+		isWildcardEnabled:    p.isWildcardEnabled,
 	})
 
-	// because mergeableIngs.Master.Ingress is a deepcopy of the original master
+	// because p.mergeableIngs.Master.Ingress is a deepcopy of the original master
 	// we need to change the key in the warnings to the original master
-	if _, exists := warnings[mergeableIngs.Master.Ingress]; exists {
-		warnings[originalMaster] = warnings[mergeableIngs.Master.Ingress]
-		delete(warnings, mergeableIngs.Master.Ingress)
+	if _, exists := warnings[p.mergeableIngs.Master.Ingress]; exists {
+		warnings[originalMaster] = warnings[p.mergeableIngs.Master.Ingress]
+		delete(warnings, p.mergeableIngs.Master.Ingress)
 	}
 
 	masterServer = masterNginxCfg.Servers[0]
@@ -631,7 +628,7 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 		keepalive = masterNginxCfg.Keepalive
 	}
 
-	minions := mergeableIngs.Minions
+	minions := p.mergeableIngs.Minions
 	for _, minion := range minions {
 		// replace minion with a deepcopy because we will modify it
 		originalMinion := minion.Ingress
@@ -641,7 +638,7 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 		minion.Ingress.Spec.DefaultBackend = nil
 
 		// Add acceptable master annotations to minion
-		mergeMasterAnnotationsIntoMinion(minion.Ingress.Annotations, mergeableIngs.Master.Ingress.Annotations)
+		mergeMasterAnnotationsIntoMinion(minion.Ingress.Annotations, p.mergeableIngs.Master.Ingress.Annotations)
 
 		removedAnnotations = filterMinionAnnotations(minion.Ingress.Annotations)
 		if len(removedAnnotations) != 0 {
@@ -654,15 +651,15 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 		dummyApResources := &AppProtectResources{}
 		dummyDosResource := &appProtectDosResource{}
 		nginxCfg, minionWarnings := generateNginxCfg(NginxCfgParams{
-			staticParams:         staticParams,
+			staticParams:         p.staticParams,
 			ingEx:                minion,
 			apResources:          dummyApResources,
 			dosResource:          dummyDosResource,
 			isMinion:             isMinion,
-			isPlus:               isPlus,
-			baseCfgParams:        baseCfgParams,
-			isResolverConfigured: isResolverConfigured,
-			isWildcardEnabled:    isWildcardEnabled,
+			isPlus:               p.isPlus,
+			baseCfgParams:        p.baseCfgParams,
+			isResolverConfigured: p.isResolverConfigured,
+			isWildcardEnabled:    p.isWildcardEnabled,
 		})
 		warnings.Add(minionWarnings)
 
@@ -695,7 +692,7 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 		Upstreams:         upstreams,
 		Keepalive:         keepalive,
 		Ingress:           masterNginxCfg.Ingress,
-		SpiffeClientCerts: staticParams.NginxServiceMesh && !baseCfgParams.SpiffeServerCerts,
+		SpiffeClientCerts: p.staticParams.NginxServiceMesh && !p.baseCfgParams.SpiffeServerCerts,
 	}, warnings
 }
 

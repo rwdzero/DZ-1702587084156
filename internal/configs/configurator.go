@@ -438,8 +438,16 @@ func (cnf *Configurator) addOrUpdateMergeableIngress(mergeableIngs *MergeableIng
 		}
 	}
 
-	nginxCfg, warnings := generateNginxCfgForMergeableIngresses(mergeableIngs, apResources, dosResource, cnf.cfgParams, cnf.isPlus,
-		cnf.IsResolverConfigured(), cnf.staticCfgParams, cnf.isWildcardEnabled)
+	nginxCfg, warnings := generateNginxCfgForMergeableIngresses(NginxCfgParams{
+		mergeableIngs:        mergeableIngs,
+		apResources:          apResources,
+		dosResource:          dosResource,
+		baseCfgParams:        cnf.cfgParams,
+		isPlus:               cnf.isPlus,
+		isResolverConfigured: cnf.IsResolverConfigured(),
+		staticParams:         cnf.staticCfgParams,
+		isWildcardEnabled:    cnf.isWildcardEnabled,
+	})
 
 	name := objectMetaToFileName(&mergeableIngs.Master.Ingress.ObjectMeta)
 	content, err := cnf.templateExecutor.ExecuteIngressConfigTemplate(&nginxCfg)
