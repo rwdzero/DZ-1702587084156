@@ -75,37 +75,48 @@ type MergeableIngresses struct {
 	Minions []*IngressEx
 }
 
-func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosResource *appProtectDosResource, isMinion bool,
-	baseCfgParams *ConfigParams, isPlus bool, isResolverConfigured bool, staticParams *StaticConfigParams, isWildcardEnabled bool,
-) (version1.IngressNginxConfig, Warnings) {
-	hasAppProtect := staticParams.MainAppProtectLoadModule
-	hasAppProtectDos := staticParams.MainAppProtectDosLoadModule
+type NginxCfgParams struct {
+	staticParams         *StaticConfigParams
+	ingEx                *IngressEx
+	mergeableIngs        *MergeableIngresses
+	apResources          *AppProtectResources
+	dosResource          *appProtectDosResource
+	baseCfgParams        *ConfigParams
+	isMinion             bool
+	isPlus               bool
+	isResolverConfigured bool
+	isWildcardEnabled    bool
+}
 
-	cfgParams := parseAnnotations(ingEx, baseCfgParams, isPlus, hasAppProtect, hasAppProtectDos, staticParams.EnableInternalRoutes)
+func generateNginxCfg(p NginxCfgParams) (version1.IngressNginxConfig, Warnings) {
+	hasAppProtect := p.staticParams.MainAppProtectLoadModule
+	hasAppProtectDos := p.staticParams.MainAppProtectDosLoadModule
 
-	wsServices := getWebsocketServices(ingEx)
-	spServices := getSessionPersistenceServices(ingEx)
-	rewrites := getRewrites(ingEx)
-	sslServices := getSSLServices(ingEx)
-	grpcServices := getGrpcServices(ingEx)
+	cfgParams := parseAnnotations(p.ingEx, p.baseCfgParams, p.isPlus, hasAppProtect, hasAppProtectDos, p.staticParams.EnableInternalRoutes)
+
+	wsServices := getWebsocketServices(p.ingEx)
+	spServices := getSessionPersistenceServices(p.ingEx)
+	rewrites := getRewrites(p.ingEx)
+	sslServices := getSSLServices(p.ingEx)
+	grpcServices := getGrpcServices(p.ingEx)
 
 	upstreams := make(map[string]version1.Upstream)
 	healthChecks := make(map[string]version1.HealthCheck)
 
 	// HTTP2 is required for gRPC to function
 	if len(grpcServices) > 0 && !cfgParams.HTTP2 {
-		glog.Errorf("Ingress %s/%s: annotation nginx.org/grpc-services requires HTTP2, ignoring", ingEx.Ingress.Namespace, ingEx.Ingress.Name)
+		glog.Errorf("Ingress %s/%s: annotation nginx.org/grpc-services requires HTTP2, ignoring", p.ingEx.Ingress.Namespace, p.ingEx.Ingress.Name)
 		grpcServices = make(map[string]bool)
 	}
 
-	if ingEx.Ingress.Spec.DefaultBackend != nil {
-		name := getNameForUpstream(ingEx.Ingress, emptyHost, ingEx.Ingress.Spec.DefaultBackend)
-		upstream := createUpstream(ingEx, name, ingEx.Ingress.Spec.DefaultBackend, spServices[ingEx.Ingress.Spec.DefaultBackend.Service.Name], &cfgParams,
-			isPlus, isResolverConfigured, staticParams.EnableLatencyMetrics)
+	if p.ingEx.Ingress.Spec.DefaultBackend != nil {
+		name := getNameForUpstream(p.ingEx.Ingress, emptyHost, p.ingEx.Ingress.Spec.DefaultBackend)
+		upstream := createUpstream(p.ingEx, name, p.ingEx.Ingress.Spec.DefaultBackend, spServices[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name], &cfgParams,
+			p.isPlus, p.isResolverConfigured, p.staticParams.EnableLatencyMetrics)
 		upstreams[name] = upstream
 
 		if cfgParams.HealthCheckEnabled {
-			if hc, exists := ingEx.HealthChecks[ingEx.Ingress.Spec.DefaultBackend.Service.Name+GetBackendPortAsString(ingEx.Ingress.Spec.DefaultBackend.Service.Port)]; exists {
+			if hc, exists := p.ingEx.HealthChecks[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name+GetBackendPortAsString(p.ingEx.Ingress.Spec.DefaultBackend.Service.Port)]; exists {
 				healthChecks[name] = createHealthCheck(hc, name, &cfgParams)
 			}
 		}
@@ -115,9 +126,9 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 
 	var servers []version1.Server
 
-	for _, rule := range ingEx.Ingress.Spec.Rules {
+	for _, rule := range p.ingEx.Ingress.Spec.Rules {
 		// skipping invalid hosts
-		if !ingEx.ValidHosts[rule.Host] {
+		if !p.ingEx.ValidHosts[rule.Host] {
 			continue
 		}
 
@@ -152,35 +163,35 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 			ServerSnippets:        cfgParams.ServerSnippets,
 			Ports:                 cfgParams.Ports,
 			SSLPorts:              cfgParams.SSLPorts,
-			TLSPassthrough:        staticParams.TLSPassthrough,
+			TLSPassthrough:        p.staticParams.TLSPassthrough,
 			AppProtectEnable:      cfgParams.AppProtectEnable,
 			AppProtectLogEnable:   cfgParams.AppProtectLogEnable,
 			SpiffeCerts:           cfgParams.SpiffeServerCerts,
-			DisableIPV6:           staticParams.DisableIPV6,
+			DisableIPV6:           p.staticParams.DisableIPV6,
 		}
 
-		warnings := addSSLConfig(&server, ingEx.Ingress, rule.Host, ingEx.Ingress.Spec.TLS, ingEx.SecretRefs, isWildcardEnabled)
+		warnings := addSSLConfig(&server, p.ingEx.Ingress, rule.Host, p.ingEx.Ingress.Spec.TLS, p.ingEx.SecretRefs, p.isWildcardEnabled)
 		allWarnings.Add(warnings)
 
 		if hasAppProtect {
-			server.AppProtectPolicy = apResources.AppProtectPolicy
-			server.AppProtectLogConfs = apResources.AppProtectLogconfs
+			server.AppProtectPolicy = p.apResources.AppProtectPolicy
+			server.AppProtectLogConfs = p.apResources.AppProtectLogconfs
 		}
 
-		if hasAppProtectDos && dosResource != nil {
-			server.AppProtectDosEnable = dosResource.AppProtectDosEnable
-			server.AppProtectDosLogEnable = dosResource.AppProtectDosLogEnable
-			server.AppProtectDosMonitorURI = dosResource.AppProtectDosMonitorURI
-			server.AppProtectDosMonitorProtocol = dosResource.AppProtectDosMonitorProtocol
-			server.AppProtectDosMonitorTimeout = dosResource.AppProtectDosMonitorTimeout
-			server.AppProtectDosName = dosResource.AppProtectDosName
-			server.AppProtectDosAccessLogDst = dosResource.AppProtectDosAccessLogDst
-			server.AppProtectDosPolicyFile = dosResource.AppProtectDosPolicyFile
-			server.AppProtectDosLogConfFile = dosResource.AppProtectDosLogConfFile
+		if hasAppProtectDos && p.dosResource != nil {
+			server.AppProtectDosEnable = p.dosResource.AppProtectDosEnable
+			server.AppProtectDosLogEnable = p.dosResource.AppProtectDosLogEnable
+			server.AppProtectDosMonitorURI = p.dosResource.AppProtectDosMonitorURI
+			server.AppProtectDosMonitorProtocol = p.dosResource.AppProtectDosMonitorProtocol
+			server.AppProtectDosMonitorTimeout = p.dosResource.AppProtectDosMonitorTimeout
+			server.AppProtectDosName = p.dosResource.AppProtectDosName
+			server.AppProtectDosAccessLogDst = p.dosResource.AppProtectDosAccessLogDst
+			server.AppProtectDosPolicyFile = p.dosResource.AppProtectDosPolicyFile
+			server.AppProtectDosLogConfFile = p.dosResource.AppProtectDosLogConfFile
 		}
 
-		if !isMinion && cfgParams.JWTKey != "" {
-			jwtAuth, redirectLoc, warnings := generateJWTConfig(ingEx.Ingress, ingEx.SecretRefs, &cfgParams, getNameForRedirectLocation(ingEx.Ingress))
+		if !p.isMinion && cfgParams.JWTKey != "" {
+			jwtAuth, redirectLoc, warnings := generateJWTConfig(p.ingEx.Ingress, p.ingEx.SecretRefs, &cfgParams, getNameForRedirectLocation(p.ingEx.Ingress))
 			server.JWTAuth = jwtAuth
 			if redirectLoc != nil {
 				server.JWTRedirectLocations = append(server.JWTRedirectLocations, *redirectLoc)
@@ -188,8 +199,8 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 			allWarnings.Add(warnings)
 		}
 
-		if !isMinion && cfgParams.BasicAuthSecret != "" {
-			basicAuth, warnings := generateBasicAuthConfig(ingEx.Ingress, ingEx.SecretRefs, &cfgParams)
+		if !p.isMinion && cfgParams.BasicAuthSecret != "" {
+			basicAuth, warnings := generateBasicAuthConfig(p.ingEx.Ingress, p.ingEx.SecretRefs, &cfgParams)
 			server.BasicAuth = basicAuth
 			allWarnings.Add(warnings)
 		}
@@ -213,30 +224,30 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 
 		for _, path := range httpIngressRuleValue.Paths {
 			// skip invalid paths for minions
-			if isMinion && !ingEx.ValidMinionPaths[path.Path] {
+			if p.isMinion && !p.ingEx.ValidMinionPaths[path.Path] {
 				continue
 			}
 
-			upsName := getNameForUpstream(ingEx.Ingress, rule.Host, &path.Backend)
+			upsName := getNameForUpstream(p.ingEx.Ingress, rule.Host, &path.Backend)
 
 			if cfgParams.HealthCheckEnabled {
-				if hc, exists := ingEx.HealthChecks[path.Backend.Service.Name+GetBackendPortAsString(path.Backend.Service.Port)]; exists {
+				if hc, exists := p.ingEx.HealthChecks[path.Backend.Service.Name+GetBackendPortAsString(path.Backend.Service.Port)]; exists {
 					healthChecks[upsName] = createHealthCheck(hc, upsName, &cfgParams)
 				}
 			}
 
 			if _, exists := upstreams[upsName]; !exists {
-				upstream := createUpstream(ingEx, upsName, &path.Backend, spServices[path.Backend.Service.Name], &cfgParams, isPlus, isResolverConfigured, staticParams.EnableLatencyMetrics)
+				upstream := createUpstream(p.ingEx, upsName, &path.Backend, spServices[path.Backend.Service.Name], &cfgParams, p.isPlus, p.isResolverConfigured, p.staticParams.EnableLatencyMetrics)
 				upstreams[upsName] = upstream
 			}
 
-			ssl := isSSLEnabled(sslServices[path.Backend.Service.Name], cfgParams, staticParams)
-			proxySSLName := generateProxySSLName(path.Backend.Service.Name, ingEx.Ingress.Namespace)
+			ssl := isSSLEnabled(sslServices[path.Backend.Service.Name], cfgParams, p.staticParams)
+			proxySSLName := generateProxySSLName(path.Backend.Service.Name, p.ingEx.Ingress.Namespace)
 			loc := createLocation(pathOrDefault(path.Path), upstreams[upsName], &cfgParams, wsServices[path.Backend.Service.Name], rewrites[path.Backend.Service.Name],
 				ssl, grpcServices[path.Backend.Service.Name], proxySSLName, path.PathType, path.Backend.Service.Name)
 
-			if isMinion && cfgParams.JWTKey != "" {
-				jwtAuth, redirectLoc, warnings := generateJWTConfig(ingEx.Ingress, ingEx.SecretRefs, &cfgParams, getNameForRedirectLocation(ingEx.Ingress))
+			if p.isMinion && cfgParams.JWTKey != "" {
+				jwtAuth, redirectLoc, warnings := generateJWTConfig(p.ingEx.Ingress, p.ingEx.SecretRefs, &cfgParams, getNameForRedirectLocation(p.ingEx.Ingress))
 				loc.JWTAuth = jwtAuth
 				if redirectLoc != nil {
 					server.JWTRedirectLocations = append(server.JWTRedirectLocations, *redirectLoc)
@@ -244,8 +255,8 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 				allWarnings.Add(warnings)
 			}
 
-			if isMinion && cfgParams.BasicAuthSecret != "" {
-				basicAuth, warnings := generateBasicAuthConfig(ingEx.Ingress, ingEx.SecretRefs, &cfgParams)
+			if p.isMinion && cfgParams.BasicAuthSecret != "" {
+				basicAuth, warnings := generateBasicAuthConfig(p.ingEx.Ingress, p.ingEx.SecretRefs, &cfgParams)
 				loc.BasicAuth = basicAuth
 				allWarnings.Add(warnings)
 			}
@@ -257,23 +268,23 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 			}
 		}
 
-		if !rootLocation && ingEx.Ingress.Spec.DefaultBackend != nil {
-			upsName := getNameForUpstream(ingEx.Ingress, emptyHost, ingEx.Ingress.Spec.DefaultBackend)
-			ssl := isSSLEnabled(sslServices[ingEx.Ingress.Spec.DefaultBackend.Service.Name], cfgParams, staticParams)
-			proxySSLName := generateProxySSLName(ingEx.Ingress.Spec.DefaultBackend.Service.Name, ingEx.Ingress.Namespace)
+		if !rootLocation && p.ingEx.Ingress.Spec.DefaultBackend != nil {
+			upsName := getNameForUpstream(p.ingEx.Ingress, emptyHost, p.ingEx.Ingress.Spec.DefaultBackend)
+			ssl := isSSLEnabled(sslServices[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name], cfgParams, p.staticParams)
+			proxySSLName := generateProxySSLName(p.ingEx.Ingress.Spec.DefaultBackend.Service.Name, p.ingEx.Ingress.Namespace)
 			pathtype := networking.PathTypePrefix
 
-			loc := createLocation(pathOrDefault("/"), upstreams[upsName], &cfgParams, wsServices[ingEx.Ingress.Spec.DefaultBackend.Service.Name], rewrites[ingEx.Ingress.Spec.DefaultBackend.Service.Name],
-				ssl, grpcServices[ingEx.Ingress.Spec.DefaultBackend.Service.Name], proxySSLName, &pathtype, ingEx.Ingress.Spec.DefaultBackend.Service.Name)
+			loc := createLocation(pathOrDefault("/"), upstreams[upsName], &cfgParams, wsServices[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name], rewrites[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name],
+				ssl, grpcServices[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name], proxySSLName, &pathtype, p.ingEx.Ingress.Spec.DefaultBackend.Service.Name)
 			locations = append(locations, loc)
 
 			if cfgParams.HealthCheckEnabled {
-				if hc, exists := ingEx.HealthChecks[ingEx.Ingress.Spec.DefaultBackend.Service.Name+GetBackendPortAsString(ingEx.Ingress.Spec.DefaultBackend.Service.Port)]; exists {
+				if hc, exists := p.ingEx.HealthChecks[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name+GetBackendPortAsString(p.ingEx.Ingress.Spec.DefaultBackend.Service.Port)]; exists {
 					healthChecks[upsName] = createHealthCheck(hc, upsName, &cfgParams)
 				}
 			}
 
-			if _, exists := grpcServices[ingEx.Ingress.Spec.DefaultBackend.Service.Name]; !exists {
+			if _, exists := grpcServices[p.ingEx.Ingress.Spec.DefaultBackend.Service.Name]; !exists {
 				grpcOnly = false
 			}
 		}
@@ -295,11 +306,11 @@ func generateNginxCfg(ingEx *IngressEx, apResources *AppProtectResources, dosRes
 		Servers:   servers,
 		Keepalive: keepalive,
 		Ingress: version1.Ingress{
-			Name:        ingEx.Ingress.Name,
-			Namespace:   ingEx.Ingress.Namespace,
-			Annotations: ingEx.Ingress.Annotations,
+			Name:        p.ingEx.Ingress.Name,
+			Namespace:   p.ingEx.Ingress.Namespace,
+			Annotations: p.ingEx.Ingress.Annotations,
 		},
-		SpiffeClientCerts: staticParams.NginxServiceMesh && !cfgParams.SpiffeServerCerts,
+		SpiffeClientCerts: p.staticParams.NginxServiceMesh && !cfgParams.SpiffeServerCerts,
 	}, allWarnings
 }
 
@@ -592,7 +603,17 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 	}
 	isMinion := false
 
-	masterNginxCfg, warnings := generateNginxCfg(mergeableIngs.Master, apResources, dosResource, isMinion, baseCfgParams, isPlus, isResolverConfigured, staticParams, isWildcardEnabled)
+	masterNginxCfg, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         staticParams,
+		ingEx:                mergeableIngs.Master,
+		apResources:          apResources,
+		dosResource:          dosResource,
+		isMinion:             isMinion,
+		isPlus:               isPlus,
+		baseCfgParams:        baseCfgParams,
+		isResolverConfigured: isResolverConfigured,
+		isWildcardEnabled:    isWildcardEnabled,
+	})
 
 	// because mergeableIngs.Master.Ingress is a deepcopy of the original master
 	// we need to change the key in the warnings to the original master
@@ -632,7 +653,17 @@ func generateNginxCfgForMergeableIngresses(mergeableIngs *MergeableIngresses, ap
 		// App Protect Resources not allowed in minions - pass empty struct
 		dummyApResources := &AppProtectResources{}
 		dummyDosResource := &appProtectDosResource{}
-		nginxCfg, minionWarnings := generateNginxCfg(minion, dummyApResources, dummyDosResource, isMinion, baseCfgParams, isPlus, isResolverConfigured, staticParams, isWildcardEnabled)
+		nginxCfg, minionWarnings := generateNginxCfg(NginxCfgParams{
+			staticParams:         staticParams,
+			ingEx:                minion,
+			apResources:          dummyApResources,
+			dosResource:          dummyDosResource,
+			isMinion:             isMinion,
+			isPlus:               isPlus,
+			baseCfgParams:        baseCfgParams,
+			isResolverConfigured: isResolverConfigured,
+			isWildcardEnabled:    isWildcardEnabled,
+		})
 		warnings.Add(minionWarnings)
 
 		// because minion.Ingress is a deepcopy of the original minion

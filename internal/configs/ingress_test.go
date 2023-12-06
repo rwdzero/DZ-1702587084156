@@ -22,8 +22,17 @@ func TestGenerateNginxCfg(t *testing.T) {
 	configParams := NewDefaultConfigParams(isPlus)
 
 	expected := createExpectedConfigForCafeIngressEx(isPlus)
-
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, isPlus, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               isPlus,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfg() returned unexpected result (-want +got):\n%s", diff)
@@ -64,7 +73,17 @@ func TestGenerateNginxCfgForJWT(t *testing.T) {
 		},
 	}
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, true, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               true,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	if !reflect.DeepEqual(result.Servers[0].JWTAuth, expected.Servers[0].JWTAuth) {
 		t.Errorf("generateNginxCfg returned \n%v,  but expected \n%v", result.Servers[0].JWTAuth, expected.Servers[0].JWTAuth)
@@ -98,7 +117,17 @@ func TestGenerateNginxCfgForBasicAuth(t *testing.T) {
 		Realm:  "Cafe App",
 	}
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, true, false, &StaticConfigParams{}, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               true,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	if !reflect.DeepEqual(result.Servers[0].BasicAuth, expected.Servers[0].BasicAuth) {
 		t.Errorf("generateNginxCfg returned \n%v,  but expected \n%v", result.Servers[0].BasicAuth, expected.Servers[0].BasicAuth)
@@ -114,7 +143,17 @@ func TestGenerateNginxCfgWithMissingTLSSecret(t *testing.T) {
 	cafeIngressEx.SecretRefs["cafe-secret"].Error = errors.New("secret doesn't exist")
 	configParams := NewDefaultConfigParams(false)
 
-	result, resultWarnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, false, false, &StaticConfigParams{}, false)
+	result, resultWarnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               false,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	expectedSSLRejectHandshake := true
 	expectedWarnings := Warnings{
@@ -138,7 +177,17 @@ func TestGenerateNginxCfgWithWildcardTLSSecret(t *testing.T) {
 	cafeIngressEx.Ingress.Spec.TLS[0].SecretName = ""
 	configParams := NewDefaultConfigParams(false)
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, false, false, &StaticConfigParams{}, true)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               false,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    true,
+	})
 
 	resultServer := result.Servers[0]
 	if !reflect.DeepEqual(resultServer.SSLCertificate, pemFileNameForWildcardTLSSecret) {
@@ -161,7 +210,17 @@ func TestGenerateNginxCfgWithIPV6Disabled(t *testing.T) {
 	expected := createExpectedConfigForCafeIngressEx(isPlus)
 	expected.Servers[0].DisableIPV6 = true
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, isPlus, false, &StaticConfigParams{DisableIPV6: true}, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{DisableIPV6: true},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               isPlus,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	if !cmp.Equal(expected, result) {
 		t.Errorf("generateNginxCfg() returned unexpected result (-want +got):\n%s", cmp.Diff(expected, result))
@@ -956,8 +1015,17 @@ func TestGenerateNginxCfgForSpiffe(t *testing.T) {
 		expected.Servers[0].Locations[i].SSL = true
 	}
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, false, false,
-		&StaticConfigParams{NginxServiceMesh: true}, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{NginxServiceMesh: true},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               false,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfg() returned unexpected result (-want +got):\n%s", diff)
@@ -979,8 +1047,17 @@ func TestGenerateNginxCfgForInternalRoute(t *testing.T) {
 	expected.Servers[0].SpiffeCerts = true
 	expected.Ingress.Annotations[internalRouteAnnotation] = "true"
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, nil, false, configParams, false, false,
-		&StaticConfigParams{NginxServiceMesh: true, EnableInternalRoutes: true}, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         &StaticConfigParams{NginxServiceMesh: true, EnableInternalRoutes: true},
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               false,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfg() returned unexpected result (-want +got):\n%s", diff)
@@ -1463,7 +1540,17 @@ func TestGenerateNginxCfgForAppProtect(t *testing.T) {
 	expected.Servers[0].AppProtectLogEnable = "on"
 	expected.Ingress.Annotations = cafeIngressEx.Ingress.Annotations
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, apResources, nil, false, configParams, isPlus, false, staticCfgParams, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         staticCfgParams,
+		ingEx:                &cafeIngressEx,
+		apResources:          apResources,
+		dosResource:          nil,
+		isMinion:             false,
+		isPlus:               isPlus,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfg() returned unexpected result (-want +got):\n%s", diff)
 	}
@@ -1554,7 +1641,17 @@ func TestGenerateNginxCfgForAppProtectDos(t *testing.T) {
 	expected.Servers[0].AppProtectDosAccessLogDst = "access-log-dest"
 	expected.Ingress.Annotations = cafeIngressEx.Ingress.Annotations
 
-	result, warnings := generateNginxCfg(&cafeIngressEx, nil, dosResource, false, configParams, isPlus, false, staticCfgParams, false)
+	result, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         staticCfgParams,
+		ingEx:                &cafeIngressEx,
+		apResources:          nil,
+		dosResource:          dosResource,
+		isMinion:             false,
+		isPlus:               isPlus,
+		baseCfgParams:        configParams,
+		isResolverConfigured: false,
+		isWildcardEnabled:    false,
+	})
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Errorf("generateNginxCfg() returned unexpected result (-want +got):\n%s", diff)
 	}

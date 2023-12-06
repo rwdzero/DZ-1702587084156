@@ -375,8 +375,18 @@ func (cnf *Configurator) addOrUpdateIngress(ingEx *IngressEx) (Warnings, error) 
 	}
 
 	isMinion := false
-	nginxCfg, warnings := generateNginxCfg(ingEx, apResources, dosResource, isMinion, cnf.cfgParams, cnf.isPlus, cnf.IsResolverConfigured(),
-		cnf.staticCfgParams, cnf.isWildcardEnabled)
+	nginxCfg, warnings := generateNginxCfg(NginxCfgParams{
+		staticParams:         cnf.staticCfgParams,
+		ingEx:                ingEx,
+		apResources:          apResources,
+		dosResource:          dosResource,
+		isMinion:             isMinion,
+		isPlus:               cnf.isPlus,
+		baseCfgParams:        cnf.cfgParams,
+		isResolverConfigured: cnf.IsResolverConfigured(),
+		isWildcardEnabled:    cnf.isWildcardEnabled,
+	})
+
 	name := objectMetaToFileName(&ingEx.Ingress.ObjectMeta)
 	content, err := cnf.templateExecutor.ExecuteIngressConfigTemplate(&nginxCfg)
 	if err != nil {
