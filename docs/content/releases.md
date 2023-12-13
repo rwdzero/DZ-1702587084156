@@ -10,15 +10,29 @@ docs: "DOCS-616"
 
 %%RELEASE_DATE%%
 
-### <i class="fa-solid fa-bomb"></i> Breaking Changes
-
 ### <i class="fa-solid fa-rocket"></i> Features
+
+- [4574](https://github.com/nginxinc/kubernetes-ingress/pull/4574) Graduate TransportServer and GlobalConfiguration to v1.
+- [4464](https://github.com/nginxinc/kubernetes-ingress/pull/4464) Allow default_server listeners to be customised.
+- [4526](https://github.com/nginxinc/kubernetes-ingress/pull/4526) Update use of http2 listen directive to align with deprecation.
+- [4276](https://github.com/nginxinc/kubernetes-ingress/pull/4276) Use Lease for leader election.
+- [4655](https://github.com/nginxinc/kubernetes-ingress/pull/4655) Support weights 0 and 100 in traffic splitting.
+- [4653](https://github.com/nginxinc/kubernetes-ingress/pull/4653) Add support for backup directive for VS and TS.
+- [4788](https://github.com/nginxinc/kubernetes-ingress/pull/4788) Dynamic reload of SSL certificates
+- [4428](https://github.com/nginxinc/kubernetes-ingress/pull/4428) Add option for installing CRDs from a single remote yaml.
 
 ### <i class="fa-solid fa-bug-slash"></i> Fixes
 
+- [4504](https://github.com/nginxinc/kubernetes-ingress/pull/4504) Delete the DNSEndpoint resource when VS is deleted & Ratelimit requeues on errors.
+- [4575](https://github.com/nginxinc/kubernetes-ingress/pull/4575) update dockerfile for debian NGINX Plus.
+
 ### <i class="fa-solid fa-box"></i> Helm Chart
 
-### <i class="fa-solid fa-upload"></i> Dependencies
+- [4306](https://github.com/nginxinc/kubernetes-ingress/pull/4306) Refactor Helm Chart location.
+- [4391](https://github.com/nginxinc/kubernetes-ingress/pull/4391) Add HPA Custom Behavior.  Thanks to [saedx1](https://github.com/saedx1).
+- [4559](https://github.com/nginxinc/kubernetes-ingress/pull/4559) Add process namespace sharing for ingress controller.  Thanks to [panzouh](https://github.com/panzouh).
+- [4651](https://github.com/nginxinc/kubernetes-ingress/pull/4651) Add initContainerResources Helm configuration.
+- [4656](https://github.com/nginxinc/kubernetes-ingress/pull/4656) Allows multiple imagePullSecrets in the helm chart.  Thanks to [AlessioCasco](https://github.com/AlessioCasco).
 
 ### <i class="fa-solid fa-download"></i> Upgrade
 
@@ -36,7 +50,7 @@ or build your own image using the 3.4.0 source code
 
 We will provide technical support for NGINX Ingress Controller on any Kubernetes platform that is currently supported by
 its provider and that passes the Kubernetes conformance tests. This release was fully tested on the following Kubernetes
-versions: x.xx-x.xx.
+versions: 1.22.17-1.28.0.
 <hr>
 
 ## 3.3.2
