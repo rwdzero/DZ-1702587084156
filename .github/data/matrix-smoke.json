@@ -1,0 +1,69 @@
+{
+  "images": [
+    {
+      "image": "debian",
+      "marker": "ingresses"
+    },
+    {
+      "image": "alpine",
+      "marker": "vsr"
+    },
+    {
+      "image": "alpine",
+      "marker": "policies"
+    },
+    {
+      "image": "debian",
+      "marker": "vs"
+    },
+    {
+      "image": "ubi",
+      "marker": "ts"
+    },
+    {
+      "image": "debian-plus",
+      "marker": "vs"
+    },
+    {
+      "image": "debian-plus",
+      "marker": "ts"
+    },
+    {
+      "image": "alpine-plus",
+      "marker": "ingresses"
+    },
+    {
+      "image": "alpine-plus",
+      "marker": "vsr"
+    },
+    {
+      "image": "ubi-plus",
+      "marker": "policies"
+    },
+    {
+      "image": "debian-plus-nap",
+      "marker": "appprotect_integration"
+    },
+    {
+      "image": "debian-plus-nap",
+      "marker": "appprotect_waf_policies_allow"
+    },
+    {
+      "image": "debian-plus-nap",
+      "marker": "'appprotect_waf_policies and not appprotect_waf_policies_allow'"
+    },
+    {
+      "image": "debian-plus-nap",
+      "marker": "appprotect_waf_policies_grpc"
+    },
+    {
+      "image": "debian-plus-nap",
+      "marker": "'appprotect_watch or appprotect_batch'"
+    },
+    {
+      "image": "debian-plus-nap",
+      "marker": "dos"
+    }
+  ],
+  "k8s": []
+}
