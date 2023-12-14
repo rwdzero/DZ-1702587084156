@@ -1,0 +1,2737 @@
+dev:
+  commands:
+  - command: go mod download
+    directory: kubernetes-ingress
+    name: install cmd
+  - command: mkdir ./charts/nginx-ingress/templates/k8s_manifests
+    directory: kubernetes-ingress/charts/nginx-ingress/templates
+    name: install cmd
+  - command: mv ./charts/nginx-ingress/templates/clusterrole.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/clusterrolebiding.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-configmap.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-daemonset.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-deployment.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-globalconfiguration.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-hpa.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-ingress-class.yaml ./charts/nginx-ingress/templates/k8s_manifests/
+      && mv ./charts/nginx-ingress/templates/controller-leader-election-configmap.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-pdb.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-prometheus-service.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-role.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-rolebiding.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-secret.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-service.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-serviceaccount.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-servicemonitor.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/ && mv ./charts/nginx-ingress/templates/controller-wildcard-secret.yaml
+      ./charts/nginx-ingress/templates/k8s_manifests/
+    directory: kubernetes-ingress/charts/nginx-ingress/templates
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/charts/nginx-ingress/templates
+    name: install cmd
+  - command: mkdir ./config/crd/k8s_manifests
+    directory: kubernetes-ingress/config/crd
+    name: install cmd
+  - command: mv ./config/crd/kustomization.yaml ./config/crd/k8s_manifests/
+    directory: kubernetes-ingress/config/crd
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/config/crd
+    name: install cmd
+  - command: mkdir ./config/crd/app-protect-dos/k8s_manifests
+    directory: kubernetes-ingress/config/crd/app-protect-dos
+    name: install cmd
+  - command: mv ./config/crd/app-protect-dos/kustomization.yaml ./config/crd/app-protect-dos/k8s_manifests/
+    directory: kubernetes-ingress/config/crd/app-protect-dos
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/config/crd/app-protect-dos
+    name: install cmd
+  - command: mkdir ./config/crd/app-protect-waf/k8s_manifests
+    directory: kubernetes-ingress/config/crd/app-protect-waf
+    name: install cmd
+  - command: mv ./config/crd/app-protect-waf/kustomization.yaml ./config/crd/app-protect-waf/k8s_manifests/
+    directory: kubernetes-ingress/config/crd/app-protect-waf
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/config/crd/app-protect-waf
+    name: install cmd
+  - command: mkdir ./config/crd/bases/k8s_manifests
+    directory: kubernetes-ingress/config/crd/bases
+    name: install cmd
+  - command: mv ./config/crd/bases/appprotect.f5.com_aplogconfs.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/appprotect.f5.com_appolicies.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/appprotect.f5.com_apusersigs.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/appprotectdos.f5.com_apdoslogconfs.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/appprotectdos.f5.com_apdospolicy.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/appprotectdos.f5.com_dosprotectedresources.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/externaldns.nginx.org_dnsendpoints.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/k8s.nginx.org_globalconfigurations.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/k8s.nginx.org_policies.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/k8s.nginx.org_transportservers.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/k8s.nginx.org_virtualserverroutes.yaml ./config/crd/bases/k8s_manifests/
+      && mv ./config/crd/bases/k8s.nginx.org_virtualservers.yaml ./config/crd/bases/k8s_manifests/
+    directory: kubernetes-ingress/config/crd/bases
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/config/crd/bases
+    name: install cmd
+  - command: mkdir ./deploy/k8s_manifests
+    directory: kubernetes-ingress/deploy
+    name: install cmd
+  - command: mv ./deploy/crds-nap-dos.yaml ./deploy/k8s_manifests/ && mv ./deploy/crds-nap-waf.yaml
+      ./deploy/k8s_manifests/ && mv ./deploy/crds.yaml ./deploy/k8s_manifests/
+    directory: kubernetes-ingress/deploy
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/deploy
+    name: install cmd
+  - command: mkdir ./deployments/common/k8s_manifests
+    directory: kubernetes-ingress/deployments/common
+    name: install cmd
+  - command: mv ./deployments/common/ingress-class.yaml ./deployments/common/k8s_manifests/
+      && mv ./deployments/common/nginx-config.yaml ./deployments/common/k8s_manifests/
+      && mv ./deployments/common/ns-and-sa.yaml ./deployments/common/k8s_manifests/
+    directory: kubernetes-ingress/deployments/common
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/deployments/common
+    name: install cmd
+  - command: mkdir ./deployments/daemon-set/k8s_manifests
+    directory: kubernetes-ingress/deployments/daemon-set
+    name: install cmd
+  - command: mv ./deployments/daemon-set/nginx-ingress.yaml ./deployments/daemon-set/k8s_manifests/
+      && mv ./deployments/daemon-set/nginx-plus-ingress.yaml ./deployments/daemon-set/k8s_manifests/
+    directory: kubernetes-ingress/deployments/daemon-set
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/deployments/daemon-set
+    name: install cmd
+  - command: mkdir ./deployments/deployment/k8s_manifests
+    directory: kubernetes-ingress/deployments/deployment
+    name: install cmd
+  - command: mv ./deployments/deployment/appprotect-dos-arb.yaml ./deployments/deployment/k8s_manifests/
+      && mv ./deployments/deployment/nginx-ingress.yaml ./deployments/deployment/k8s_manifests/
+      && mv ./deployments/deployment/nginx-plus-ingress.yaml ./deployments/deployment/k8s_manifests/
+    directory: kubernetes-ingress/deployments/deployment
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/deployments/deployment
+    name: install cmd
+  - command: mkdir ./deployments/rbac/k8s_manifests
+    directory: kubernetes-ingress/deployments/rbac
+    name: install cmd
+  - command: mv ./deployments/rbac/ap-rbac.yaml ./deployments/rbac/k8s_manifests/
+      && mv ./deployments/rbac/apdos-rbac.yaml ./deployments/rbac/k8s_manifests/ &&
+      mv ./deployments/rbac/rbac.yaml ./deployments/rbac/k8s_manifests/
+    directory: kubernetes-ingress/deployments/rbac
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/deployments/rbac
+    name: install cmd
+  - command: mkdir ./deployments/service/k8s_manifests
+    directory: kubernetes-ingress/deployments/service
+    name: install cmd
+  - command: mv ./deployments/service/appprotect-dos-arb-svc.yaml ./deployments/service/k8s_manifests/
+      && mv ./deployments/service/loadbalancer-aws-elb.yaml ./deployments/service/k8s_manifests/
+      && mv ./deployments/service/loadbalancer.yaml ./deployments/service/k8s_manifests/
+      && mv ./deployments/service/nodeport.yaml ./deployments/service/k8s_manifests/
+    directory: kubernetes-ingress/deployments/service
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/deployments/service
+    name: install cmd
+  - command: go mod download
+    directory: kubernetes-ingress/docs
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/access-control/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/access-control
+    name: install cmd
+  - command: mv ./examples/custom-resources/access-control/access-control-policy-allow.yaml
+      ./examples/custom-resources/access-control/k8s_manifests/ && mv ./examples/custom-resources/access-control/access-control-policy-deny.yaml
+      ./examples/custom-resources/access-control/k8s_manifests/ && mv ./examples/custom-resources/access-control/virtual-server.yaml
+      ./examples/custom-resources/access-control/k8s_manifests/ && mv ./examples/custom-resources/access-control/webapp.yaml
+      ./examples/custom-resources/access-control/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/access-control
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/access-control
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/advanced-routing/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/advanced-routing
+    name: install cmd
+  - command: mv ./examples/custom-resources/advanced-routing/cafe-virtual-server.yaml
+      ./examples/custom-resources/advanced-routing/k8s_manifests/ && mv ./examples/custom-resources/advanced-routing/cafe.yaml
+      ./examples/custom-resources/advanced-routing/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/advanced-routing
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/advanced-routing
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/app-protect-dos/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/app-protect-dos
+    name: install cmd
+  - command: mv ./examples/custom-resources/app-protect-dos/apdos-logconf.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-dos/apdos-policy.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-dos/apdos-protected.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-dos/syslog.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-dos/syslog2.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-dos/virtual-server.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-dos/webapp.yaml ./examples/custom-resources/app-protect-dos/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/app-protect-dos
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/app-protect-dos
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/app-protect-waf/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/app-protect-waf
+    name: install cmd
+  - command: mv ./examples/custom-resources/app-protect-waf/ap-apple-uds.yaml ./examples/custom-resources/app-protect-waf/k8s_manifests/
+      && mv ./examples/custom-resources/app-protect-waf/ap-dataguard-alarm-policy.yaml
+      ./examples/custom-resources/app-protect-waf/k8s_manifests/ && mv ./examples/custom-resources/app-protect-waf/ap-logconf.yaml
+      ./examples/custom-resources/app-protect-waf/k8s_manifests/ && mv ./examples/custom-resources/app-protect-waf/syslog.yaml
+      ./examples/custom-resources/app-protect-waf/k8s_manifests/ && mv ./examples/custom-resources/app-protect-waf/virtual-server.yaml
+      ./examples/custom-resources/app-protect-waf/k8s_manifests/ && mv ./examples/custom-resources/app-protect-waf/waf.yaml
+      ./examples/custom-resources/app-protect-waf/k8s_manifests/ && mv ./examples/custom-resources/app-protect-waf/webapp.yaml
+      ./examples/custom-resources/app-protect-waf/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/app-protect-waf
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/app-protect-waf
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/backup-directive/transport-server/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/backup-directive/transport-server
+    name: install cmd
+  - command: mv ./examples/custom-resources/backup-directive/transport-server/backup-svc.yaml
+      ./examples/custom-resources/backup-directive/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/backup-directive/transport-server/external-secure-app.yaml
+      ./examples/custom-resources/backup-directive/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/backup-directive/transport-server/nginx-config.yaml
+      ./examples/custom-resources/backup-directive/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/backup-directive/transport-server/secure-app.yaml
+      ./examples/custom-resources/backup-directive/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/backup-directive/transport-server/transport-server-passthrough.yaml
+      ./examples/custom-resources/backup-directive/transport-server/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/backup-directive/transport-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/backup-directive/transport-server
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/backup-directive/virtual-server
+    name: install cmd
+  - command: mv ./examples/custom-resources/backup-directive/virtual-server/backup-svc.yaml
+      ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests/ &&
+      mv ./examples/custom-resources/backup-directive/virtual-server/cafe-secret.yaml
+      ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests/ &&
+      mv ./examples/custom-resources/backup-directive/virtual-server/cafe-virtual-server-backup.yaml
+      ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests/ &&
+      mv ./examples/custom-resources/backup-directive/virtual-server/cafe.yaml ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests/
+      && mv ./examples/custom-resources/backup-directive/virtual-server/external-cafe.yaml
+      ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests/ &&
+      mv ./examples/custom-resources/backup-directive/virtual-server/nginx-config.yaml
+      ./examples/custom-resources/backup-directive/virtual-server/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/backup-directive/virtual-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/backup-directive/virtual-server
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/basic-auth/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/basic-auth
+    name: install cmd
+  - command: mv ./examples/custom-resources/basic-auth/basic-auth-policy.yaml ./examples/custom-resources/basic-auth/k8s_manifests/
+      && mv ./examples/custom-resources/basic-auth/cafe-passwd.yaml ./examples/custom-resources/basic-auth/k8s_manifests/
+      && mv ./examples/custom-resources/basic-auth/cafe-secret.yaml ./examples/custom-resources/basic-auth/k8s_manifests/
+      && mv ./examples/custom-resources/basic-auth/cafe-virtual-server.yaml ./examples/custom-resources/basic-auth/k8s_manifests/
+      && mv ./examples/custom-resources/basic-auth/cafe.yaml ./examples/custom-resources/basic-auth/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/basic-auth
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/basic-auth
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/basic-configuration/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/basic-configuration
+    name: install cmd
+  - command: mv ./examples/custom-resources/basic-configuration/cafe-secret.yaml ./examples/custom-resources/basic-configuration/k8s_manifests/
+      && mv ./examples/custom-resources/basic-configuration/cafe-virtual-server.yaml
+      ./examples/custom-resources/basic-configuration/k8s_manifests/ && mv ./examples/custom-resources/basic-configuration/cafe.yaml
+      ./examples/custom-resources/basic-configuration/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/basic-configuration
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/basic-configuration
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/basic-tcp-udp/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/basic-tcp-udp
+    name: install cmd
+  - command: mv ./examples/custom-resources/basic-tcp-udp/dns.yaml ./examples/custom-resources/basic-tcp-udp/k8s_manifests/
+      && mv ./examples/custom-resources/basic-tcp-udp/global-configuration.yaml ./examples/custom-resources/basic-tcp-udp/k8s_manifests/
+      && mv ./examples/custom-resources/basic-tcp-udp/transport-server-tcp.yaml ./examples/custom-resources/basic-tcp-udp/k8s_manifests/
+      && mv ./examples/custom-resources/basic-tcp-udp/transport-server-udp.yaml ./examples/custom-resources/basic-tcp-udp/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/basic-tcp-udp
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/basic-tcp-udp
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/certmanager/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/certmanager
+    name: install cmd
+  - command: mv ./examples/custom-resources/certmanager/cafe-virtual-server.yaml ./examples/custom-resources/certmanager/k8s_manifests/
+      && mv ./examples/custom-resources/certmanager/cafe.yaml ./examples/custom-resources/certmanager/k8s_manifests/
+      && mv ./examples/custom-resources/certmanager/self-signed.yaml ./examples/custom-resources/certmanager/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/certmanager
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/certmanager
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/cross-namespace-configuration/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/cross-namespace-configuration
+    name: install cmd
+  - command: mv ./examples/custom-resources/cross-namespace-configuration/cafe-secret.yaml
+      ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/ &&
+      mv ./examples/custom-resources/cross-namespace-configuration/cafe-virtual-server.yaml
+      ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/ &&
+      mv ./examples/custom-resources/cross-namespace-configuration/coffee-virtual-server-route.yaml
+      ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/ &&
+      mv ./examples/custom-resources/cross-namespace-configuration/coffee.yaml ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/
+      && mv ./examples/custom-resources/cross-namespace-configuration/namespaces.yaml
+      ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/ &&
+      mv ./examples/custom-resources/cross-namespace-configuration/tea-virtual-server-route.yaml
+      ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/ &&
+      mv ./examples/custom-resources/cross-namespace-configuration/tea.yaml ./examples/custom-resources/cross-namespace-configuration/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/cross-namespace-configuration
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/cross-namespace-configuration
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/custom-listeners/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/custom-listeners
+    name: install cmd
+  - command: mv ./examples/custom-resources/custom-listeners/cafe-secret.yaml ./examples/custom-resources/custom-listeners/k8s_manifests/
+      && mv ./examples/custom-resources/custom-listeners/cafe-virtual-server.yaml
+      ./examples/custom-resources/custom-listeners/k8s_manifests/ && mv ./examples/custom-resources/custom-listeners/cafe.yaml
+      ./examples/custom-resources/custom-listeners/k8s_manifests/ && mv ./examples/custom-resources/custom-listeners/global-configuration.yaml
+      ./examples/custom-resources/custom-listeners/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/custom-listeners
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/custom-listeners
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/egress-mtls/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/egress-mtls
+    name: install cmd
+  - command: mv ./examples/custom-resources/egress-mtls/egress-mtls-secret.yaml ./examples/custom-resources/egress-mtls/k8s_manifests/
+      && mv ./examples/custom-resources/egress-mtls/egress-mtls.yaml ./examples/custom-resources/egress-mtls/k8s_manifests/
+      && mv ./examples/custom-resources/egress-mtls/egress-trusted-ca-secret.yaml
+      ./examples/custom-resources/egress-mtls/k8s_manifests/ && mv ./examples/custom-resources/egress-mtls/secure-app.yaml
+      ./examples/custom-resources/egress-mtls/k8s_manifests/ && mv ./examples/custom-resources/egress-mtls/virtual-server.yaml
+      ./examples/custom-resources/egress-mtls/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/egress-mtls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/egress-mtls
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/external-dns/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/external-dns
+    name: install cmd
+  - command: mv ./examples/custom-resources/external-dns/cafe-secret.yaml ./examples/custom-resources/external-dns/k8s_manifests/
+      && mv ./examples/custom-resources/external-dns/cafe-virtual-server.yaml ./examples/custom-resources/external-dns/k8s_manifests/
+      && mv ./examples/custom-resources/external-dns/cafe.yaml ./examples/custom-resources/external-dns/k8s_manifests/
+      && mv ./examples/custom-resources/external-dns/external-dns-route53.yaml ./examples/custom-resources/external-dns/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/external-dns
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/external-dns
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/externalname-services/transport-server/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services
+    name: install cmd
+  - command: mv ./examples/custom-resources/externalname-services/transport-server/externalname-svc.yaml
+      ./examples/custom-resources/externalname-services/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/externalname-services/transport-server/nginx-config.yaml
+      ./examples/custom-resources/externalname-services/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/externalname-services/transport-server/secure-app-external.yaml
+      ./examples/custom-resources/externalname-services/transport-server/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services
+    name: install cmd
+  - command: kubectl apply --dry-run=client -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/externalname-services/transport-server/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services/transport-server
+    name: install cmd
+  - command: mv ./examples/custom-resources/externalname-services/transport-server/externalname-svc.yaml
+      ./examples/custom-resources/externalname-services/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/externalname-services/transport-server/nginx-config.yaml
+      ./examples/custom-resources/externalname-services/transport-server/k8s_manifests/
+      && mv ./examples/custom-resources/externalname-services/transport-server/secure-app-external.yaml
+      ./examples/custom-resources/externalname-services/transport-server/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services/transport-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/externalname-services/transport-server
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/ingress-mtls/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/ingress-mtls
+    name: install cmd
+  - command: mv ./examples/custom-resources/ingress-mtls/ingress-mtls-secret.yaml
+      ./examples/custom-resources/ingress-mtls/k8s_manifests/ && mv ./examples/custom-resources/ingress-mtls/ingress-mtls.yaml
+      ./examples/custom-resources/ingress-mtls/k8s_manifests/ && mv ./examples/custom-resources/ingress-mtls/tls-secret.yaml
+      ./examples/custom-resources/ingress-mtls/k8s_manifests/ && mv ./examples/custom-resources/ingress-mtls/virtual-server.yaml
+      ./examples/custom-resources/ingress-mtls/k8s_manifests/ && mv ./examples/custom-resources/ingress-mtls/webapp.yaml
+      ./examples/custom-resources/ingress-mtls/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/ingress-mtls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/ingress-mtls
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/jwks/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/jwks
+    name: install cmd
+  - command: mv ./examples/custom-resources/jwks/jwks.yaml ./examples/custom-resources/jwks/k8s_manifests/
+      && mv ./examples/custom-resources/jwks/keycloak.yaml ./examples/custom-resources/jwks/k8s_manifests/
+      && mv ./examples/custom-resources/jwks/nginx-config.yaml ./examples/custom-resources/jwks/k8s_manifests/
+      && mv ./examples/custom-resources/jwks/tls-secret.yaml ./examples/custom-resources/jwks/k8s_manifests/
+      && mv ./examples/custom-resources/jwks/virtual-server-idp.yaml ./examples/custom-resources/jwks/k8s_manifests/
+      && mv ./examples/custom-resources/jwks/virtual-server.yaml ./examples/custom-resources/jwks/k8s_manifests/
+      && mv ./examples/custom-resources/jwks/webapp.yaml ./examples/custom-resources/jwks/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/jwks
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/jwks
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/jwt/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/jwt
+    name: install cmd
+  - command: mv ./examples/custom-resources/jwt/jwk-secret.yaml ./examples/custom-resources/jwt/k8s_manifests/
+      && mv ./examples/custom-resources/jwt/jwt.yaml ./examples/custom-resources/jwt/k8s_manifests/
+      && mv ./examples/custom-resources/jwt/virtual-server.yaml ./examples/custom-resources/jwt/k8s_manifests/
+      && mv ./examples/custom-resources/jwt/webapp.yaml ./examples/custom-resources/jwt/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/jwt
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/jwt
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/oidc/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/oidc
+    name: install cmd
+  - command: mv ./examples/custom-resources/oidc/client-secret.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/keycloak.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/nginx-config.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/nginx-ingress-headless.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/oidc.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/tls-secret.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/virtual-server-idp.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/virtual-server.yaml ./examples/custom-resources/oidc/k8s_manifests/
+      && mv ./examples/custom-resources/oidc/webapp.yaml ./examples/custom-resources/oidc/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/oidc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/oidc
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/rate-limit/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/rate-limit
+    name: install cmd
+  - command: mv ./examples/custom-resources/rate-limit/rate-limit.yaml ./examples/custom-resources/rate-limit/k8s_manifests/
+      && mv ./examples/custom-resources/rate-limit/virtual-server.yaml ./examples/custom-resources/rate-limit/k8s_manifests/
+      && mv ./examples/custom-resources/rate-limit/webapp.yaml ./examples/custom-resources/rate-limit/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/rate-limit
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/rate-limit
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/service-insight/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/service-insight
+    name: install cmd
+  - command: mv ./examples/custom-resources/service-insight/service-insight-secret.yaml
+      ./examples/custom-resources/service-insight/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/service-insight
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/service-insight
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/tls-passthrough/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/tls-passthrough
+    name: install cmd
+  - command: mv ./examples/custom-resources/tls-passthrough/secure-app.yaml ./examples/custom-resources/tls-passthrough/k8s_manifests/
+      && mv ./examples/custom-resources/tls-passthrough/transport-server-passthrough.yaml
+      ./examples/custom-resources/tls-passthrough/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/tls-passthrough
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/tls-passthrough
+    name: install cmd
+  - command: mkdir ./examples/custom-resources/traffic-splitting/k8s_manifests
+    directory: kubernetes-ingress/examples/custom-resources/traffic-splitting
+    name: install cmd
+  - command: mv ./examples/custom-resources/traffic-splitting/cafe-virtual-server.yaml
+      ./examples/custom-resources/traffic-splitting/k8s_manifests/ && mv ./examples/custom-resources/traffic-splitting/cafe.yaml
+      ./examples/custom-resources/traffic-splitting/k8s_manifests/
+    directory: kubernetes-ingress/examples/custom-resources/traffic-splitting
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/custom-resources/traffic-splitting
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/app-protect-dos/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/app-protect-dos
+    name: install cmd
+  - command: mv ./examples/ingress-resources/app-protect-dos/apdos-logconf.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/apdos-policy.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/apdos-protected.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/syslog.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/syslog2.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/webapp-ingress.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/webapp-secret.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-dos/webapp.yaml ./examples/ingress-resources/app-protect-dos/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/app-protect-dos
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/app-protect-dos
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/app-protect-waf/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/app-protect-waf
+    name: install cmd
+  - command: mv ./examples/ingress-resources/app-protect-waf/ap-apple-uds.yaml ./examples/ingress-resources/app-protect-waf/k8s_manifests/
+      && mv ./examples/ingress-resources/app-protect-waf/ap-dataguard-alarm-policy.yaml
+      ./examples/ingress-resources/app-protect-waf/k8s_manifests/ && mv ./examples/ingress-resources/app-protect-waf/ap-logconf.yaml
+      ./examples/ingress-resources/app-protect-waf/k8s_manifests/ && mv ./examples/ingress-resources/app-protect-waf/cafe-ingress.yaml
+      ./examples/ingress-resources/app-protect-waf/k8s_manifests/ && mv ./examples/ingress-resources/app-protect-waf/cafe-secret.yaml
+      ./examples/ingress-resources/app-protect-waf/k8s_manifests/ && mv ./examples/ingress-resources/app-protect-waf/cafe.yaml
+      ./examples/ingress-resources/app-protect-waf/k8s_manifests/ && mv ./examples/ingress-resources/app-protect-waf/syslog.yaml
+      ./examples/ingress-resources/app-protect-waf/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/app-protect-waf
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/app-protect-waf
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/basic-auth/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/basic-auth
+    name: install cmd
+  - command: mv ./examples/ingress-resources/basic-auth/cafe-ingress.yaml ./examples/ingress-resources/basic-auth/k8s_manifests/
+      && mv ./examples/ingress-resources/basic-auth/cafe-passwd.yaml ./examples/ingress-resources/basic-auth/k8s_manifests/
+      && mv ./examples/ingress-resources/basic-auth/cafe-secret.yaml ./examples/ingress-resources/basic-auth/k8s_manifests/
+      && mv ./examples/ingress-resources/basic-auth/cafe.yaml ./examples/ingress-resources/basic-auth/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/basic-auth
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/basic-auth
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/complete-example/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/complete-example
+    name: install cmd
+  - command: mv ./examples/ingress-resources/complete-example/cafe-ingress.yaml ./examples/ingress-resources/complete-example/k8s_manifests/
+      && mv ./examples/ingress-resources/complete-example/cafe-secret.yaml ./examples/ingress-resources/complete-example/k8s_manifests/
+      && mv ./examples/ingress-resources/complete-example/cafe.yaml ./examples/ingress-resources/complete-example/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/complete-example
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/complete-example
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/mergeable-ingress-types/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/mergeable-ingress-types
+    name: install cmd
+  - command: mv ./examples/ingress-resources/mergeable-ingress-types/cafe-master.yaml
+      ./examples/ingress-resources/mergeable-ingress-types/k8s_manifests/ && mv ./examples/ingress-resources/mergeable-ingress-types/cafe-secret.yaml
+      ./examples/ingress-resources/mergeable-ingress-types/k8s_manifests/ && mv ./examples/ingress-resources/mergeable-ingress-types/cafe.yaml
+      ./examples/ingress-resources/mergeable-ingress-types/k8s_manifests/ && mv ./examples/ingress-resources/mergeable-ingress-types/coffee-minion.yaml
+      ./examples/ingress-resources/mergeable-ingress-types/k8s_manifests/ && mv ./examples/ingress-resources/mergeable-ingress-types/tea-minion.yaml
+      ./examples/ingress-resources/mergeable-ingress-types/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/mergeable-ingress-types
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/mergeable-ingress-types
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/session-persistence/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/session-persistence
+    name: install cmd
+  - command: mv ./examples/ingress-resources/session-persistence/cafe-ingress-with-session-persistence.yaml
+      ./examples/ingress-resources/session-persistence/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/session-persistence
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/session-persistence
+    name: install cmd
+  - command: mkdir ./examples/ingress-resources/tcp-udp/k8s_manifests
+    directory: kubernetes-ingress/examples/ingress-resources/tcp-udp
+    name: install cmd
+  - command: mv ./examples/ingress-resources/tcp-udp/dns.yaml ./examples/ingress-resources/tcp-udp/k8s_manifests/
+      && mv ./examples/ingress-resources/tcp-udp/nginx-config.yaml ./examples/ingress-resources/tcp-udp/k8s_manifests/
+      && mv ./examples/ingress-resources/tcp-udp/nginx-plus-config.yaml ./examples/ingress-resources/tcp-udp/k8s_manifests/
+    directory: kubernetes-ingress/examples/ingress-resources/tcp-udp
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/ingress-resources/tcp-udp
+    name: install cmd
+  - command: mkdir ./examples/shared-examples/default-server-secret/k8s_manifests
+    directory: kubernetes-ingress/examples/shared-examples/default-server-secret
+    name: install cmd
+  - command: mv ./examples/shared-examples/default-server-secret/default-server-secret.yaml
+      ./examples/shared-examples/default-server-secret/k8s_manifests/
+    directory: kubernetes-ingress/examples/shared-examples/default-server-secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/shared-examples/default-server-secret
+    name: install cmd
+  - command: mkdir ./examples/shared-examples/usage-reporting/k8s_manifests
+    directory: kubernetes-ingress/examples/shared-examples/usage-reporting
+    name: install cmd
+  - command: mv ./examples/shared-examples/usage-reporting/cluster-connector.yaml
+      ./examples/shared-examples/usage-reporting/k8s_manifests/
+    directory: kubernetes-ingress/examples/shared-examples/usage-reporting
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/examples/shared-examples/usage-reporting
+    name: install cmd
+  - command: mkdir ./perf-tests/data/k8s_manifests
+    directory: kubernetes-ingress/perf-tests/data
+    name: install cmd
+  - command: mv ./perf-tests/data/appprotect-ingress.yaml ./perf-tests/data/k8s_manifests/
+      && mv ./perf-tests/data/non-ap-ingress.yaml ./perf-tests/data/k8s_manifests/
+    directory: kubernetes-ingress/perf-tests/data
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/perf-tests/data
+    name: install cmd
+  - command: python -m venv --copies ~/.venv && . ~/.venv/bin/activate && pip install
+      -r requirements.txt
+    directory: kubernetes-ingress/tests
+    name: install cmd
+  - command: mkdir ./tests/ci-files/k8s_manifests
+    directory: kubernetes-ingress/tests/ci-files
+    name: install cmd
+  - command: mv ./tests/ci-files/ci-kind-config.yaml ./tests/ci-files/k8s_manifests/
+    directory: kubernetes-ingress/tests/ci-files
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/ci-files
+    name: install cmd
+  - command: mkdir ./tests/data/access-control/configmap/k8s_manifests
+    directory: kubernetes-ingress/tests/data/access-control/configmap
+    name: install cmd
+  - command: mv ./tests/data/access-control/configmap/nginx-config.yaml ./tests/data/access-control/configmap/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/access-control/configmap
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/access-control/configmap
+    name: install cmd
+  - command: mkdir ./tests/data/access-control/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/access-control/policies
+    name: install cmd
+  - command: mv ./tests/data/access-control/policies/access-control-policy-allow.yaml
+      ./tests/data/access-control/policies/k8s_manifests/ && mv ./tests/data/access-control/policies/access-control-policy-deny.yaml
+      ./tests/data/access-control/policies/k8s_manifests/ && mv ./tests/data/access-control/policies/access-control-policy-invalid.yaml
+      ./tests/data/access-control/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/access-control/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/access-control/policies
+    name: install cmd
+  - command: mkdir ./tests/data/access-control/route-subroute/k8s_manifests
+    directory: kubernetes-ingress/tests/data/access-control/route-subroute
+    name: install cmd
+  - command: mv ./tests/data/access-control/route-subroute/virtual-server-allow-route.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-deny-route.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-invalid-route.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-override-route.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-override-spec-route.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-route-allow-subroute.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-route-deny-subroute.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-route-invalid-subroute.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-route-override-subroute.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-vsr-route-override.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/ && mv ./tests/data/access-control/route-subroute/virtual-server-vsr-spec-override.yaml
+      ./tests/data/access-control/route-subroute/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/access-control/route-subroute
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/access-control/route-subroute
+    name: install cmd
+  - command: mkdir ./tests/data/access-control/spec/k8s_manifests
+    directory: kubernetes-ingress/tests/data/access-control/spec
+    name: install cmd
+  - command: mv ./tests/data/access-control/spec/virtual-server-allow.yaml ./tests/data/access-control/spec/k8s_manifests/
+      && mv ./tests/data/access-control/spec/virtual-server-deny.yaml ./tests/data/access-control/spec/k8s_manifests/
+      && mv ./tests/data/access-control/spec/virtual-server-invalid.yaml ./tests/data/access-control/spec/k8s_manifests/
+      && mv ./tests/data/access-control/spec/virtual-server-override.yaml ./tests/data/access-control/spec/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/access-control/spec
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/access-control/spec
+    name: install cmd
+  - command: mkdir ./tests/data/access-control/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/access-control/standard
+    name: install cmd
+  - command: mv ./tests/data/access-control/standard/virtual-server.yaml ./tests/data/access-control/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/access-control/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/access-control/standard
+    name: install cmd
+  - command: mkdir ./tests/data/annotations/k8s_manifests
+    directory: kubernetes-ingress/tests/data/annotations
+    name: install cmd
+  - command: mv ./tests/data/annotations/configmap-with-keys.yaml ./tests/data/annotations/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/annotations
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/annotations
+    name: install cmd
+  - command: mkdir ./tests/data/annotations/grpc/k8s_manifests
+    directory: kubernetes-ingress/tests/data/annotations/grpc
+    name: install cmd
+  - command: mv ./tests/data/annotations/grpc/annotations-ingress.yaml ./tests/data/annotations/grpc/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/annotations/grpc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/annotations/grpc
+    name: install cmd
+  - command: mkdir ./tests/data/annotations/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/annotations/mergeable
+    name: install cmd
+  - command: mv ./tests/data/annotations/mergeable/annotations-ingress.yaml ./tests/data/annotations/mergeable/k8s_manifests/
+      && mv ./tests/data/annotations/mergeable/minion-annotations-differ.yaml ./tests/data/annotations/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/annotations/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/annotations/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/annotations/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/annotations/standard
+    name: install cmd
+  - command: mv ./tests/data/annotations/standard/annotations-ingress-snippets.yaml
+      ./tests/data/annotations/standard/k8s_manifests/ && mv ./tests/data/annotations/standard/annotations-ingress.yaml
+      ./tests/data/annotations/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/annotations/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/annotations/standard
+    name: install cmd
+  - command: mkdir ./tests/data/ap-waf/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ap-waf
+    name: install cmd
+  - command: mv ./tests/data/ap-waf/ap-ic-uds.yaml ./tests/data/ap-waf/k8s_manifests/
+      && mv ./tests/data/ap-waf/dataguard-alarm-uds.yaml ./tests/data/ap-waf/k8s_manifests/
+      && mv ./tests/data/ap-waf/logconf-esc.yaml ./tests/data/ap-waf/k8s_manifests/
+      && mv ./tests/data/ap-waf/logconf.yaml ./tests/data/ap-waf/k8s_manifests/ &&
+      mv ./tests/data/ap-waf/syslog.yaml ./tests/data/ap-waf/k8s_manifests/ && mv
+      ./tests/data/ap-waf/syslog2.yaml ./tests/data/ap-waf/k8s_manifests/ && mv ./tests/data/ap-waf/virtual-server-route-waf-subroute.yaml
+      ./tests/data/ap-waf/k8s_manifests/ && mv ./tests/data/ap-waf/virtual-server-waf-route.yaml
+      ./tests/data/ap-waf/k8s_manifests/ && mv ./tests/data/ap-waf/virtual-server-waf-spec.yaml
+      ./tests/data/ap-waf/k8s_manifests/ && mv ./tests/data/ap-waf/webapp.yaml ./tests/data/ap-waf/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ap-waf
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ap-waf
+    name: install cmd
+  - command: mkdir ./tests/data/ap-waf/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ap-waf/policies
+    name: install cmd
+  - command: mv ./tests/data/ap-waf/policies/waf-dataguard.yaml ./tests/data/ap-waf/policies/k8s_manifests/
+      && mv ./tests/data/ap-waf/policies/waf-default.yaml ./tests/data/ap-waf/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ap-waf/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ap-waf/policies
+    name: install cmd
+  - command: mkdir ./tests/data/ap-waf/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ap-waf/standard
+    name: install cmd
+  - command: mv ./tests/data/ap-waf/standard/virtual-server.yaml ./tests/data/ap-waf/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ap-waf/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ap-waf/standard
+    name: install cmd
+  - command: mkdir ./tests/data/ap-waf-grpc/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ap-waf-grpc
+    name: install cmd
+  - command: mv ./tests/data/ap-waf-grpc/grpc-block-saygoodbye.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/grpc-block-sayhello.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/logconf.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/nginx-config.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/syslog.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/tls-secret.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/virtual-server-route-waf.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/virtual-server-waf-spec.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/vsr-virtual-server-spec.yaml ./tests/data/ap-waf-grpc/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ap-waf-grpc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ap-waf-grpc
+    name: install cmd
+  - command: mkdir ./tests/data/ap-waf-grpc/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ap-waf-grpc/policies
+    name: install cmd
+  - command: mv ./tests/data/ap-waf-grpc/policies/waf-block-saygoodbye.yaml ./tests/data/ap-waf-grpc/policies/k8s_manifests/
+      && mv ./tests/data/ap-waf-grpc/policies/waf-block-sayhello.yaml ./tests/data/ap-waf-grpc/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ap-waf-grpc/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ap-waf-grpc/policies
+    name: install cmd
+  - command: mkdir ./tests/data/appprotect/k8s_manifests
+    directory: kubernetes-ingress/tests/data/appprotect
+    name: install cmd
+  - command: mv ./tests/data/appprotect/ap-ic-uds.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/ap-user-def-browser.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/appprotect-ingress.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/appprotect-secret.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/csrf.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/dataguard-alarm-uds.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/dataguard-alarm.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/file-block.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/logconf.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/malformed-block.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/syslog.yaml ./tests/data/appprotect/k8s_manifests/
+      && mv ./tests/data/appprotect/syslog2.yaml ./tests/data/appprotect/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/appprotect
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/appprotect
+    name: install cmd
+  - command: mkdir ./tests/data/appprotect/grpc/k8s_manifests
+    directory: kubernetes-ingress/tests/data/appprotect/grpc
+    name: install cmd
+  - command: mv ./tests/data/appprotect/grpc/grpc-block-saygoodbye.yaml ./tests/data/appprotect/grpc/k8s_manifests/
+      && mv ./tests/data/appprotect/grpc/grpc-block-sayhello.yaml ./tests/data/appprotect/grpc/k8s_manifests/
+      && mv ./tests/data/appprotect/grpc/ingress.yaml ./tests/data/appprotect/grpc/k8s_manifests/
+      && mv ./tests/data/appprotect/grpc/nginx-config.yaml ./tests/data/appprotect/grpc/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/appprotect/grpc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/appprotect/grpc
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-auth-mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-auth-mergeable
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-auth-mergeable/auth-basic-master-secret-updated.yaml
+      ./tests/data/auth-basic-auth-mergeable/k8s_manifests/ && mv ./tests/data/auth-basic-auth-mergeable/auth-basic-master-secret.yaml
+      ./tests/data/auth-basic-auth-mergeable/k8s_manifests/ && mv ./tests/data/auth-basic-auth-mergeable/auth-basic-minion-secret-updated.yaml
+      ./tests/data/auth-basic-auth-mergeable/k8s_manifests/ && mv ./tests/data/auth-basic-auth-mergeable/auth-basic-minion-secret.yaml
+      ./tests/data/auth-basic-auth-mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-auth-mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-auth-mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-auth-mergeable/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-auth-mergeable/mergeable
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-auth-mergeable/mergeable/auth-basic-auth-ingress.yaml
+      ./tests/data/auth-basic-auth-mergeable/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-auth-mergeable/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-auth-mergeable/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-policy/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/policies
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-policy/policies/auth-basic-policy-invalid-secret.yaml
+      ./tests/data/auth-basic-policy/policies/k8s_manifests/ && mv ./tests/data/auth-basic-policy/policies/auth-basic-policy-invalid.yaml
+      ./tests/data/auth-basic-policy/policies/k8s_manifests/ && mv ./tests/data/auth-basic-policy/policies/auth-basic-policy-valid-multi.yaml
+      ./tests/data/auth-basic-policy/policies/k8s_manifests/ && mv ./tests/data/auth-basic-policy/policies/auth-basic-policy-valid.yaml
+      ./tests/data/auth-basic-policy/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/policies
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-policy/route-subroute/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/route-subroute
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-override-route.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-override-spec-route-1.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-override-spec-route-2.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-route-invalid-subroute-secret.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-route-invalid-subroute.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-route-override-subroute.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-route-valid-subroute-multi.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-route-valid-subroute.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-vsr-route-override.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/ && mv ./tests/data/auth-basic-policy/route-subroute/virtual-server-vsr-spec-override.yaml
+      ./tests/data/auth-basic-policy/route-subroute/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/route-subroute
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/route-subroute
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-policy/secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/secret
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-policy/secret/htpasswd-secret-invalid.yaml
+      ./tests/data/auth-basic-policy/secret/k8s_manifests/ && mv ./tests/data/auth-basic-policy/secret/htpasswd-secret-valid-empty.yaml
+      ./tests/data/auth-basic-policy/secret/k8s_manifests/ && mv ./tests/data/auth-basic-policy/secret/htpasswd-secret-valid.yaml
+      ./tests/data/auth-basic-policy/secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/secret
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-policy/spec/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/spec
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-policy/spec/virtual-server-policy-multi-1.yaml
+      ./tests/data/auth-basic-policy/spec/k8s_manifests/ && mv ./tests/data/auth-basic-policy/spec/virtual-server-policy-multi-2.yaml
+      ./tests/data/auth-basic-policy/spec/k8s_manifests/ && mv ./tests/data/auth-basic-policy/spec/virtual-server-policy-single-invalid-pol.yaml
+      ./tests/data/auth-basic-policy/spec/k8s_manifests/ && mv ./tests/data/auth-basic-policy/spec/virtual-server-policy-single-invalid-secret.yaml
+      ./tests/data/auth-basic-policy/spec/k8s_manifests/ && mv ./tests/data/auth-basic-policy/spec/virtual-server-policy-single.yaml
+      ./tests/data/auth-basic-policy/spec/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/spec
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-policy/spec
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-secrets/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-secrets/auth-basic-secret-invalid.yaml ./tests/data/auth-basic-secrets/k8s_manifests/
+      && mv ./tests/data/auth-basic-secrets/auth-basic-secret-updated.yaml ./tests/data/auth-basic-secrets/k8s_manifests/
+      && mv ./tests/data/auth-basic-secrets/auth-basic-secret.yaml ./tests/data/auth-basic-secrets/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-secrets/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets/mergeable
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-secrets/mergeable/auth-basic-secrets-ingress.yaml
+      ./tests/data/auth-basic-secrets/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/auth-basic-secrets/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets/standard
+    name: install cmd
+  - command: mv ./tests/data/auth-basic-secrets/standard/auth-basic-secrets-ingress.yaml
+      ./tests/data/auth-basic-secrets/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/auth-basic-secrets/standard
+    name: install cmd
+  - command: mkdir ./tests/data/common/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common
+    name: install cmd
+  - command: mv ./tests/data/common/backend1-svc.yaml ./tests/data/common/k8s_manifests/
+      && mv ./tests/data/common/backend1.yaml ./tests/data/common/k8s_manifests/ &&
+      mv ./tests/data/common/configmap-with-grpc.yaml ./tests/data/common/k8s_manifests/
+      && mv ./tests/data/common/default-server-secret.yaml ./tests/data/common/k8s_manifests/
+      && mv ./tests/data/common/ns.yaml ./tests/data/common/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/advanced-routing/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/advanced-routing
+    name: install cmd
+  - command: mv ./tests/data/common/app/advanced-routing/app.yaml ./tests/data/common/app/advanced-routing/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/advanced-routing
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/advanced-routing
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/dos/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/dos
+    name: install cmd
+  - command: mv ./tests/data/common/app/dos/app.yaml ./tests/data/common/app/dos/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/dos
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/dos
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/extended/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/extended
+    name: install cmd
+  - command: mv ./tests/data/common/app/extended/app.yaml ./tests/data/common/app/extended/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/extended
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/extended
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/grpc/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/grpc
+    name: install cmd
+  - command: mv ./tests/data/common/app/grpc/app.yaml ./tests/data/common/app/grpc/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/grpc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/grpc
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/grpc-vs/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/grpc-vs
+    name: install cmd
+  - command: mv ./tests/data/common/app/grpc-vs/app.yaml ./tests/data/common/app/grpc-vs/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/grpc-vs
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/grpc-vs
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/grpc-vs-mixed/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/grpc-vs-mixed
+    name: install cmd
+  - command: mv ./tests/data/common/app/grpc-vs-mixed/app.yaml ./tests/data/common/app/grpc-vs-mixed/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/grpc-vs-mixed
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/grpc-vs-mixed
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/secure/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure
+    name: install cmd
+  - command: mv ./tests/data/common/app/secure/app.yaml ./tests/data/common/app/secure/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/secure
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/secure/config-map/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure/config-map
+    name: install cmd
+  - command: mv ./tests/data/common/app/secure/config-map/secure-config.yaml ./tests/data/common/app/secure/config-map/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/secure/config-map
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure/config-map
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/secure/deployment/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure/deployment
+    name: install cmd
+  - command: mv ./tests/data/common/app/secure/deployment/secure-app.yaml ./tests/data/common/app/secure/deployment/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/secure/deployment
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure/deployment
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/secure/secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure/secret
+    name: install cmd
+  - command: mv ./tests/data/common/app/secure/secret/app-tls-secret.yaml ./tests/data/common/app/secure/secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/secure/secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure/secret
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/secure-ca/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure-ca
+    name: install cmd
+  - command: mv ./tests/data/common/app/secure-ca/app.yaml ./tests/data/common/app/secure-ca/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/secure-ca
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/secure-ca
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/simple/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/simple
+    name: install cmd
+  - command: mv ./tests/data/common/app/simple/app.yaml ./tests/data/common/app/simple/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/simple
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/simple
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/split/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/split
+    name: install cmd
+  - command: mv ./tests/data/common/app/split/app.yaml ./tests/data/common/app/split/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/split
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/split
+    name: install cmd
+  - command: mkdir ./tests/data/common/app/vsr/secure/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/app/vsr/secure
+    name: install cmd
+  - command: mv ./tests/data/common/app/vsr/secure/multiple.yaml ./tests/data/common/app/vsr/secure/k8s_manifests/
+      && mv ./tests/data/common/app/vsr/secure/single.yaml ./tests/data/common/app/vsr/secure/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/app/vsr/secure
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/app/vsr/secure
+    name: install cmd
+  - command: mkdir ./tests/data/common/service/k8s_manifests
+    directory: kubernetes-ingress/tests/data/common/service
+    name: install cmd
+  - command: mv ./tests/data/common/service/loadbalancer-with-additional-ports.yaml
+      ./tests/data/common/service/k8s_manifests/ && mv ./tests/data/common/service/nodeport-with-additional-ports.yaml
+      ./tests/data/common/service/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/common/service
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/common/service
+    name: install cmd
+  - command: mkdir ./tests/data/custom-annotations/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/custom-annotations/mergeable
+    name: install cmd
+  - command: mv ./tests/data/custom-annotations/mergeable/annotations-ingress.yaml
+      ./tests/data/custom-annotations/mergeable/k8s_manifests/ && mv ./tests/data/custom-annotations/mergeable/nginx-config.yaml
+      ./tests/data/custom-annotations/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/custom-annotations/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/custom-annotations/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/custom-annotations/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/custom-annotations/standard
+    name: install cmd
+  - command: mv ./tests/data/custom-annotations/standard/annotations-ingress.yaml
+      ./tests/data/custom-annotations/standard/k8s_manifests/ && mv ./tests/data/custom-annotations/standard/nginx-config.yaml
+      ./tests/data/custom-annotations/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/custom-annotations/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/custom-annotations/standard
+    name: install cmd
+  - command: mkdir ./tests/data/default-server/k8s_manifests
+    directory: kubernetes-ingress/tests/data/default-server
+    name: install cmd
+  - command: mv ./tests/data/default-server/invalid-tls-secret.yaml ./tests/data/default-server/k8s_manifests/
+      && mv ./tests/data/default-server/new-tls-secret.yaml ./tests/data/default-server/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/default-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/default-server
+    name: install cmd
+  - command: mkdir ./tests/data/dos/k8s_manifests
+    directory: kubernetes-ingress/tests/data/dos
+    name: install cmd
+  - command: mv ./tests/data/dos/appprotect-dos-arb-svc.yaml ./tests/data/dos/k8s_manifests/
+      && mv ./tests/data/dos/appprotect-dos-arb.yaml ./tests/data/dos/k8s_manifests/
+      && mv ./tests/data/dos/arbitrator_ns.yaml ./tests/data/dos/k8s_manifests/ &&
+      mv ./tests/data/dos/dos-ingress.yaml ./tests/data/dos/k8s_manifests/ && mv ./tests/data/dos/dos-logconf.yaml
+      ./tests/data/dos/k8s_manifests/ && mv ./tests/data/dos/dos-policy.yaml ./tests/data/dos/k8s_manifests/
+      && mv ./tests/data/dos/dos-protected.yaml ./tests/data/dos/k8s_manifests/ &&
+      mv ./tests/data/dos/dos-secret.yaml ./tests/data/dos/k8s_manifests/ && mv ./tests/data/dos/dos-syslog.yaml
+      ./tests/data/dos/k8s_manifests/ && mv ./tests/data/dos/nginx-config-arb-dif-ns.yaml
+      ./tests/data/dos/k8s_manifests/ && mv ./tests/data/dos/nginx-config.yaml ./tests/data/dos/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/dos
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/dos
+    name: install cmd
+  - command: mkdir ./tests/data/egress-mtls/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/policies
+    name: install cmd
+  - command: mv ./tests/data/egress-mtls/policies/egress-mtls-invalid.yaml ./tests/data/egress-mtls/policies/k8s_manifests/
+      && mv ./tests/data/egress-mtls/policies/egress-mtls.yaml ./tests/data/egress-mtls/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/egress-mtls/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/policies
+    name: install cmd
+  - command: mkdir ./tests/data/egress-mtls/route-subroute/k8s_manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/route-subroute
+    name: install cmd
+  - command: mv ./tests/data/egress-mtls/route-subroute/virtual-server-mtls.yaml ./tests/data/egress-mtls/route-subroute/k8s_manifests/
+      && mv ./tests/data/egress-mtls/route-subroute/virtual-server-route-mtls.yaml
+      ./tests/data/egress-mtls/route-subroute/k8s_manifests/ && mv ./tests/data/egress-mtls/route-subroute/virtual-server-vsr.yaml
+      ./tests/data/egress-mtls/route-subroute/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/egress-mtls/route-subroute
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/route-subroute
+    name: install cmd
+  - command: mkdir ./tests/data/egress-mtls/secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/secret
+    name: install cmd
+  - command: mv ./tests/data/egress-mtls/secret/egress-mtls-secret-crl.yaml ./tests/data/egress-mtls/secret/k8s_manifests/
+      && mv ./tests/data/egress-mtls/secret/egress-mtls-secret.yaml ./tests/data/egress-mtls/secret/k8s_manifests/
+      && mv ./tests/data/egress-mtls/secret/tls-secret.yaml ./tests/data/egress-mtls/secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/egress-mtls/secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/secret
+    name: install cmd
+  - command: mkdir ./tests/data/egress-mtls/spec/k8s_manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/spec
+    name: install cmd
+  - command: mv ./tests/data/egress-mtls/spec/virtual-server-mtls-diff-host.yaml ./tests/data/egress-mtls/spec/k8s_manifests/
+      && mv ./tests/data/egress-mtls/spec/virtual-server-mtls.yaml ./tests/data/egress-mtls/spec/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/egress-mtls/spec
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/spec
+    name: install cmd
+  - command: mkdir ./tests/data/egress-mtls/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/standard
+    name: install cmd
+  - command: mv ./tests/data/egress-mtls/standard/virtual-server.yaml ./tests/data/egress-mtls/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/egress-mtls/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/egress-mtls/standard
+    name: install cmd
+  - command: mkdir ./tests/data/externalname-services/k8s_manifests
+    directory: kubernetes-ingress/tests/data/externalname-services
+    name: install cmd
+  - command: mv ./tests/data/externalname-services/externalname-ingress.yaml ./tests/data/externalname-services/k8s_manifests/
+      && mv ./tests/data/externalname-services/externalname-svc.yaml ./tests/data/externalname-services/k8s_manifests/
+      && mv ./tests/data/externalname-services/nginx-config.yaml ./tests/data/externalname-services/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/externalname-services
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/externalname-services
+    name: install cmd
+  - command: mkdir ./tests/data/filter-secrets/k8s_manifests
+    directory: kubernetes-ingress/tests/data/filter-secrets
+    name: install cmd
+  - command: mv ./tests/data/filter-secrets/filtered-secret-1.yaml ./tests/data/filter-secrets/k8s_manifests/
+      && mv ./tests/data/filter-secrets/filtered-secret-2.yaml ./tests/data/filter-secrets/k8s_manifests/
+      && mv ./tests/data/filter-secrets/nginx-ingress-secret.yaml ./tests/data/filter-secrets/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/filter-secrets
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/filter-secrets
+    name: install cmd
+  - command: mkdir ./tests/data/hsts/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/hsts/mergeable
+    name: install cmd
+  - command: mv ./tests/data/hsts/mergeable/hsts-ingress.yaml ./tests/data/hsts/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/hsts/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/hsts/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/hsts/mergeable-tls/k8s_manifests
+    directory: kubernetes-ingress/tests/data/hsts/mergeable-tls
+    name: install cmd
+  - command: mv ./tests/data/hsts/mergeable-tls/hsts-ingress.yaml ./tests/data/hsts/mergeable-tls/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/hsts/mergeable-tls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/hsts/mergeable-tls
+    name: install cmd
+  - command: mkdir ./tests/data/hsts/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/hsts/standard
+    name: install cmd
+  - command: mv ./tests/data/hsts/standard/hsts-ingress.yaml ./tests/data/hsts/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/hsts/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/hsts/standard
+    name: install cmd
+  - command: mkdir ./tests/data/hsts/standard-tls/k8s_manifests
+    directory: kubernetes-ingress/tests/data/hsts/standard-tls
+    name: install cmd
+  - command: mv ./tests/data/hsts/standard-tls/hsts-ingress.yaml ./tests/data/hsts/standard-tls/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/hsts/standard-tls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/hsts/standard-tls
+    name: install cmd
+  - command: mkdir ./tests/data/hsts/tls-no-secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/hsts/tls-no-secret
+    name: install cmd
+  - command: mv ./tests/data/hsts/tls-no-secret/hsts-ingress.yaml ./tests/data/hsts/tls-no-secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/hsts/tls-no-secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/hsts/tls-no-secret
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-class/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-class
+    name: install cmd
+  - command: mv ./tests/data/ingress-class/custom-class-ingress.yaml ./tests/data/ingress-class/k8s_manifests/
+      && mv ./tests/data/ingress-class/nginx-class-ingress.yaml ./tests/data/ingress-class/k8s_manifests/
+      && mv ./tests/data/ingress-class/no-class-ingress.yaml ./tests/data/ingress-class/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-class
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-class
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-class/resource/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-class/resource
+    name: install cmd
+  - command: mv ./tests/data/ingress-class/resource/custom-ingress-class-res.yaml
+      ./tests/data/ingress-class/resource/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-class/resource
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-class/resource
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-mtls/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/policies
+    name: install cmd
+  - command: mv ./tests/data/ingress-mtls/policies/ingress-mtls-crl.yaml ./tests/data/ingress-mtls/policies/k8s_manifests/
+      && mv ./tests/data/ingress-mtls/policies/ingress-mtls-invalid.yaml ./tests/data/ingress-mtls/policies/k8s_manifests/
+      && mv ./tests/data/ingress-mtls/policies/ingress-mtls.yaml ./tests/data/ingress-mtls/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-mtls/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/policies
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-mtls/route-subroute/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/route-subroute
+    name: install cmd
+  - command: mv ./tests/data/ingress-mtls/route-subroute/virtual-server-mtls.yaml
+      ./tests/data/ingress-mtls/route-subroute/k8s_manifests/ && mv ./tests/data/ingress-mtls/route-subroute/virtual-server-route-mtls.yaml
+      ./tests/data/ingress-mtls/route-subroute/k8s_manifests/ && mv ./tests/data/ingress-mtls/route-subroute/virtual-server-vsr.yaml
+      ./tests/data/ingress-mtls/route-subroute/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-mtls/route-subroute
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/route-subroute
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-mtls/secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/secret
+    name: install cmd
+  - command: mv ./tests/data/ingress-mtls/secret/ingress-mtls-secret-crl.yaml ./tests/data/ingress-mtls/secret/k8s_manifests/
+      && mv ./tests/data/ingress-mtls/secret/ingress-mtls-secret.yaml ./tests/data/ingress-mtls/secret/k8s_manifests/
+      && mv ./tests/data/ingress-mtls/secret/tls-secret.yaml ./tests/data/ingress-mtls/secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-mtls/secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/secret
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-mtls/spec/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/spec
+    name: install cmd
+  - command: mv ./tests/data/ingress-mtls/spec/virtual-server-mtls.yaml ./tests/data/ingress-mtls/spec/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-mtls/spec
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/spec
+    name: install cmd
+  - command: mkdir ./tests/data/ingress-mtls/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/standard
+    name: install cmd
+  - command: mv ./tests/data/ingress-mtls/standard/virtual-server.yaml ./tests/data/ingress-mtls/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/ingress-mtls/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/ingress-mtls/standard
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-auth-mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-auth-mergeable
+    name: install cmd
+  - command: mv ./tests/data/jwt-auth-mergeable/jwt-master-secret-updated.yaml ./tests/data/jwt-auth-mergeable/k8s_manifests/
+      && mv ./tests/data/jwt-auth-mergeable/jwt-master-secret.yaml ./tests/data/jwt-auth-mergeable/k8s_manifests/
+      && mv ./tests/data/jwt-auth-mergeable/jwt-minion-secret-updated.yaml ./tests/data/jwt-auth-mergeable/k8s_manifests/
+      && mv ./tests/data/jwt-auth-mergeable/jwt-minion-secret.yaml ./tests/data/jwt-auth-mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-auth-mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-auth-mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-auth-mergeable/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-auth-mergeable/mergeable
+    name: install cmd
+  - command: mv ./tests/data/jwt-auth-mergeable/mergeable/jwt-auth-ingress.yaml ./tests/data/jwt-auth-mergeable/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-auth-mergeable/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-auth-mergeable/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/policies
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy/policies/jwt-policy-invalid-secret.yaml ./tests/data/jwt-policy/policies/k8s_manifests/
+      && mv ./tests/data/jwt-policy/policies/jwt-policy-invalid.yaml ./tests/data/jwt-policy/policies/k8s_manifests/
+      && mv ./tests/data/jwt-policy/policies/jwt-policy-valid-multi.yaml ./tests/data/jwt-policy/policies/k8s_manifests/
+      && mv ./tests/data/jwt-policy/policies/jwt-policy-valid.yaml ./tests/data/jwt-policy/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/policies
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy/route-subroute/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/route-subroute
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy/route-subroute/virtual-server-override-route.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-override-spec-route-1.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-override-spec-route-2.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-route-invalid-subroute-secret.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-route-invalid-subroute.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-route-override-subroute.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-route-valid-subroute-multi.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-route-valid-subroute.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-vsr-route-override.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/ && mv ./tests/data/jwt-policy/route-subroute/virtual-server-vsr-spec-override.yaml
+      ./tests/data/jwt-policy/route-subroute/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy/route-subroute
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/route-subroute
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy/secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/secret
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy/secret/jwk-secret-invalid.yaml ./tests/data/jwt-policy/secret/k8s_manifests/
+      && mv ./tests/data/jwt-policy/secret/jwk-secret-valid.yaml ./tests/data/jwt-policy/secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy/secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/secret
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy/spec/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/spec
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy/spec/virtual-server-policy-multi-1.yaml ./tests/data/jwt-policy/spec/k8s_manifests/
+      && mv ./tests/data/jwt-policy/spec/virtual-server-policy-multi-2.yaml ./tests/data/jwt-policy/spec/k8s_manifests/
+      && mv ./tests/data/jwt-policy/spec/virtual-server-policy-single-invalid-pol.yaml
+      ./tests/data/jwt-policy/spec/k8s_manifests/ && mv ./tests/data/jwt-policy/spec/virtual-server-policy-single-invalid-secret.yaml
+      ./tests/data/jwt-policy/spec/k8s_manifests/ && mv ./tests/data/jwt-policy/spec/virtual-server-policy-single.yaml
+      ./tests/data/jwt-policy/spec/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy/spec
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy/spec
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy-jwksuri/configmap/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/configmap
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy-jwksuri/configmap/nginx-config.yaml ./tests/data/jwt-policy-jwksuri/configmap/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/configmap
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/configmap
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy-jwksuri/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/policies
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy-jwksuri/policies/jwt-policy-invalid.yaml ./tests/data/jwt-policy-jwksuri/policies/k8s_manifests/
+      && mv ./tests/data/jwt-policy-jwksuri/policies/jwt-policy-valid.yaml ./tests/data/jwt-policy-jwksuri/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/policies
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/virtual-server
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-invalid-policy-route-subpath.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-invalid-policy-route.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-invalid-policy-spec.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-policy-route-subpath-diff-host.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-policy-route-subpath.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-policy-route.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-policy-spec-and-route.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server/virtual-server-policy-spec.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/virtual-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/virtual-server
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-policy-jwksuri/virtual-server-route/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/virtual-server-route
+    name: install cmd
+  - command: mv ./tests/data/jwt-policy-jwksuri/virtual-server-route/virtual-server-route-invalid-policy-subroute.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server-route/k8s_manifests/ && mv ./tests/data/jwt-policy-jwksuri/virtual-server-route/virtual-server-route-policy-subroute.yaml
+      ./tests/data/jwt-policy-jwksuri/virtual-server-route/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/virtual-server-route
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-policy-jwksuri/virtual-server-route
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-secrets/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-secrets
+    name: install cmd
+  - command: mv ./tests/data/jwt-secrets/jwt-secret-invalid.yaml ./tests/data/jwt-secrets/k8s_manifests/
+      && mv ./tests/data/jwt-secrets/jwt-secret-updated.yaml ./tests/data/jwt-secrets/k8s_manifests/
+      && mv ./tests/data/jwt-secrets/jwt-secret.yaml ./tests/data/jwt-secrets/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-secrets
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-secrets
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-secrets/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-secrets/mergeable
+    name: install cmd
+  - command: mv ./tests/data/jwt-secrets/mergeable/jwt-secrets-ingress.yaml ./tests/data/jwt-secrets/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-secrets/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-secrets/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/jwt-secrets/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/jwt-secrets/standard
+    name: install cmd
+  - command: mv ./tests/data/jwt-secrets/standard/jwt-secrets-ingress.yaml ./tests/data/jwt-secrets/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/jwt-secrets/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/jwt-secrets/standard
+    name: install cmd
+  - command: mkdir ./tests/data/policy-ingress-class/k8s_manifests
+    directory: kubernetes-ingress/tests/data/policy-ingress-class
+    name: install cmd
+  - command: mv ./tests/data/policy-ingress-class/policy-ingress-class.yaml ./tests/data/policy-ingress-class/k8s_manifests/
+      && mv ./tests/data/policy-ingress-class/policy-other-ingress-class.yaml ./tests/data/policy-ingress-class/k8s_manifests/
+      && mv ./tests/data/policy-ingress-class/policy.yaml ./tests/data/policy-ingress-class/k8s_manifests/
+      && mv ./tests/data/policy-ingress-class/virtual-server-policy.yaml ./tests/data/policy-ingress-class/k8s_manifests/
+      && mv ./tests/data/policy-ingress-class/virtual-server.yaml ./tests/data/policy-ingress-class/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/policy-ingress-class
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/policy-ingress-class
+    name: install cmd
+  - command: mkdir ./tests/data/prometheus/k8s_manifests
+    directory: kubernetes-ingress/tests/data/prometheus
+    name: install cmd
+  - command: mv ./tests/data/prometheus/secret.yaml ./tests/data/prometheus/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/prometheus
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/prometheus
+    name: install cmd
+  - command: mkdir ./tests/data/prometheus/transport-server/k8s_manifests
+    directory: kubernetes-ingress/tests/data/prometheus/transport-server
+    name: install cmd
+  - command: mv ./tests/data/prometheus/transport-server/global-configuration.yaml
+      ./tests/data/prometheus/transport-server/k8s_manifests/ && mv ./tests/data/prometheus/transport-server/passthrough.yaml
+      ./tests/data/prometheus/transport-server/k8s_manifests/ && mv ./tests/data/prometheus/transport-server/tcp.yaml
+      ./tests/data/prometheus/transport-server/k8s_manifests/ && mv ./tests/data/prometheus/transport-server/udp.yaml
+      ./tests/data/prometheus/transport-server/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/prometheus/transport-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/prometheus/transport-server
+    name: install cmd
+  - command: mkdir ./tests/data/rate-limit/policies/k8s_manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/policies
+    name: install cmd
+  - command: mv ./tests/data/rate-limit/policies/rate-limit-invalid.yaml ./tests/data/rate-limit/policies/k8s_manifests/
+      && mv ./tests/data/rate-limit/policies/rate-limit-primary.yaml ./tests/data/rate-limit/policies/k8s_manifests/
+      && mv ./tests/data/rate-limit/policies/rate-limit-secondary.yaml ./tests/data/rate-limit/policies/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/rate-limit/policies
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/policies
+    name: install cmd
+  - command: mkdir ./tests/data/rate-limit/route-subroute/k8s_manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/route-subroute
+    name: install cmd
+  - command: mv ./tests/data/rate-limit/route-subroute/virtual-server-override-route.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-override-spec-route.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-route-invalid-subroute.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-route-override-subroute.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-route-pri-subroute.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-route-sec-subroute.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-vsr-route-override.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/ && mv ./tests/data/rate-limit/route-subroute/virtual-server-vsr-spec-override.yaml
+      ./tests/data/rate-limit/route-subroute/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/rate-limit/route-subroute
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/route-subroute
+    name: install cmd
+  - command: mkdir ./tests/data/rate-limit/spec/k8s_manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/spec
+    name: install cmd
+  - command: mv ./tests/data/rate-limit/spec/virtual-server-invalid.yaml ./tests/data/rate-limit/spec/k8s_manifests/
+      && mv ./tests/data/rate-limit/spec/virtual-server-override.yaml ./tests/data/rate-limit/spec/k8s_manifests/
+      && mv ./tests/data/rate-limit/spec/virtual-server-primary.yaml ./tests/data/rate-limit/spec/k8s_manifests/
+      && mv ./tests/data/rate-limit/spec/virtual-server-secondary.yaml ./tests/data/rate-limit/spec/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/rate-limit/spec
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/spec
+    name: install cmd
+  - command: mkdir ./tests/data/rate-limit/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/standard
+    name: install cmd
+  - command: mv ./tests/data/rate-limit/standard/virtual-server.yaml ./tests/data/rate-limit/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/rate-limit/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/rate-limit/standard
+    name: install cmd
+  - command: mkdir ./tests/data/rewrites/k8s_manifests
+    directory: kubernetes-ingress/tests/data/rewrites
+    name: install cmd
+  - command: mv ./tests/data/rewrites/hello.yaml ./tests/data/rewrites/k8s_manifests/
+      && mv ./tests/data/rewrites/virtual-server-parent.yaml ./tests/data/rewrites/k8s_manifests/
+      && mv ./tests/data/rewrites/virtual-server-rewrite.yaml ./tests/data/rewrites/k8s_manifests/
+      && mv ./tests/data/rewrites/virtual-server-route-prefixes.yaml ./tests/data/rewrites/k8s_manifests/
+      && mv ./tests/data/rewrites/virtual-server-route-regex1.yaml ./tests/data/rewrites/k8s_manifests/
+      && mv ./tests/data/rewrites/virtual-server-route-regex2.yaml ./tests/data/rewrites/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/rewrites
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/rewrites
+    name: install cmd
+  - command: mkdir ./tests/data/service-insight/k8s_manifests
+    directory: kubernetes-ingress/tests/data/service-insight
+    name: install cmd
+  - command: mv ./tests/data/service-insight/app.yaml ./tests/data/service-insight/k8s_manifests/
+      && mv ./tests/data/service-insight/secret.yaml ./tests/data/service-insight/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/service-insight
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/service-insight
+    name: install cmd
+  - command: mkdir ./tests/data/smoke/k8s_manifests
+    directory: kubernetes-ingress/tests/data/smoke
+    name: install cmd
+  - command: mv ./tests/data/smoke/smoke-secret.yaml ./tests/data/smoke/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/smoke
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/smoke
+    name: install cmd
+  - command: mkdir ./tests/data/smoke/implementation-specific-pathtype/k8s_manifests
+    directory: kubernetes-ingress/tests/data/smoke/implementation-specific-pathtype
+    name: install cmd
+  - command: mv ./tests/data/smoke/implementation-specific-pathtype/smoke-ingress.yaml
+      ./tests/data/smoke/implementation-specific-pathtype/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/smoke/implementation-specific-pathtype
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/smoke/implementation-specific-pathtype
+    name: install cmd
+  - command: mkdir ./tests/data/smoke/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/smoke/mergeable
+    name: install cmd
+  - command: mv ./tests/data/smoke/mergeable/smoke-ingress.yaml ./tests/data/smoke/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/smoke/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/smoke/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/smoke/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/smoke/standard
+    name: install cmd
+  - command: mv ./tests/data/smoke/standard/smoke-ingress.yaml ./tests/data/smoke/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/smoke/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/smoke/standard
+    name: install cmd
+  - command: mkdir ./tests/data/startup/virtual-server-routes/k8s_manifests
+    directory: kubernetes-ingress/tests/data/startup/virtual-server-routes
+    name: install cmd
+  - command: mv ./tests/data/startup/virtual-server-routes/route.yaml ./tests/data/startup/virtual-server-routes/k8s_manifests/
+      && mv ./tests/data/startup/virtual-server-routes/virtual-server.yaml ./tests/data/startup/virtual-server-routes/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/startup/virtual-server-routes
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/startup/virtual-server-routes
+    name: install cmd
+  - command: mkdir ./tests/data/tls/k8s_manifests
+    directory: kubernetes-ingress/tests/data/tls
+    name: install cmd
+  - command: mv ./tests/data/tls/invalid-tls-secret.yaml ./tests/data/tls/k8s_manifests/
+      && mv ./tests/data/tls/new-tls-secret.yaml ./tests/data/tls/k8s_manifests/ &&
+      mv ./tests/data/tls/tls-secret.yaml ./tests/data/tls/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/tls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/tls
+    name: install cmd
+  - command: mkdir ./tests/data/tls/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/tls/mergeable
+    name: install cmd
+  - command: mv ./tests/data/tls/mergeable/ingress.yaml ./tests/data/tls/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/tls/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/tls/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/tls/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/tls/standard
+    name: install cmd
+  - command: mv ./tests/data/tls/standard/ingress.yaml ./tests/data/tls/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/tls/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/tls/standard
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server
+    name: install cmd
+  - command: mv ./tests/data/transport-server/transport-server-configurable-timeouts.yaml
+      ./tests/data/transport-server/k8s_manifests/ && mv ./tests/data/transport-server/transport-server-snippets.yaml
+      ./tests/data/transport-server/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-backup-service/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-backup-service
+    name: install cmd
+  - command: mv ./tests/data/transport-server-backup-service/backup-svc.yaml ./tests/data/transport-server-backup-service/k8s_manifests/
+      && mv ./tests/data/transport-server-backup-service/nginx-config.yaml ./tests/data/transport-server-backup-service/k8s_manifests/
+      && mv ./tests/data/transport-server-backup-service/transport-server-with-backup.yaml
+      ./tests/data/transport-server-backup-service/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-backup-service
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-backup-service
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-backup-service/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-backup-service/standard
+    name: install cmd
+  - command: mv ./tests/data/transport-server-backup-service/standard/secure-app.yaml
+      ./tests/data/transport-server-backup-service/standard/k8s_manifests/ && mv ./tests/data/transport-server-backup-service/standard/transport-server.yaml
+      ./tests/data/transport-server-backup-service/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-backup-service/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-backup-service/standard
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-externalname/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-externalname
+    name: install cmd
+  - command: mv ./tests/data/transport-server-externalname/external-svc-deployment.yaml
+      ./tests/data/transport-server-externalname/k8s_manifests/ && mv ./tests/data/transport-server-externalname/externalname-svc.yaml
+      ./tests/data/transport-server-externalname/k8s_manifests/ && mv ./tests/data/transport-server-externalname/nginx-config.yaml
+      ./tests/data/transport-server-externalname/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-externalname
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-externalname
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-externalname/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-externalname/standard
+    name: install cmd
+  - command: mv ./tests/data/transport-server-externalname/standard/global-configuration.yaml
+      ./tests/data/transport-server-externalname/standard/k8s_manifests/ && mv ./tests/data/transport-server-externalname/standard/service_deployment.yaml
+      ./tests/data/transport-server-externalname/standard/k8s_manifests/ && mv ./tests/data/transport-server-externalname/standard/transport-server.yaml
+      ./tests/data/transport-server-externalname/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-externalname/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-externalname/standard
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-status/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-status
+    name: install cmd
+  - command: mv ./tests/data/transport-server-status/rejected-invalid.yaml ./tests/data/transport-server-status/k8s_manifests/
+      && mv ./tests/data/transport-server-status/rejected-warning.yaml ./tests/data/transport-server-status/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-status
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-status
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-status/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-status/standard
+    name: install cmd
+  - command: mv ./tests/data/transport-server-status/standard/global-configuration.yaml
+      ./tests/data/transport-server-status/standard/k8s_manifests/ && mv ./tests/data/transport-server-status/standard/service_deployment.yaml
+      ./tests/data/transport-server-status/standard/k8s_manifests/ && mv ./tests/data/transport-server-status/standard/transport-server.yaml
+      ./tests/data/transport-server-status/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-status/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-status/standard
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-tcp-load-balance/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tcp-load-balance
+    name: install cmd
+  - command: mv ./tests/data/transport-server-tcp-load-balance/failing-hc-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/max-connections-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/method-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/missing-service-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/new-tls-secret.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/passing-hc-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/second-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/tcp-tls-secret.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/transport-server-tls.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-tcp-load-balance/wrong-port-transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-tcp-load-balance
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tcp-load-balance
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-tcp-load-balance/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tcp-load-balance/standard
+    name: install cmd
+  - command: mv ./tests/data/transport-server-tcp-load-balance/standard/global-configuration.yaml
+      ./tests/data/transport-server-tcp-load-balance/standard/k8s_manifests/ && mv
+      ./tests/data/transport-server-tcp-load-balance/standard/service_deployment.yaml
+      ./tests/data/transport-server-tcp-load-balance/standard/k8s_manifests/ && mv
+      ./tests/data/transport-server-tcp-load-balance/standard/transport-server.yaml
+      ./tests/data/transport-server-tcp-load-balance/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-tcp-load-balance/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tcp-load-balance/standard
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-tls-passthrough/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tls-passthrough
+    name: install cmd
+  - command: mv ./tests/data/transport-server-tls-passthrough/nginx-config.yaml ./tests/data/transport-server-tls-passthrough/k8s_manifests/
+      && mv ./tests/data/transport-server-tls-passthrough/transport-server-same-host.yaml
+      ./tests/data/transport-server-tls-passthrough/k8s_manifests/ && mv ./tests/data/transport-server-tls-passthrough/virtual-server-same-host.yaml
+      ./tests/data/transport-server-tls-passthrough/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-tls-passthrough
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tls-passthrough
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-tls-passthrough/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tls-passthrough/standard
+    name: install cmd
+  - command: mv ./tests/data/transport-server-tls-passthrough/standard/secure-app.yaml
+      ./tests/data/transport-server-tls-passthrough/standard/k8s_manifests/ && mv
+      ./tests/data/transport-server-tls-passthrough/standard/transport-server.yaml
+      ./tests/data/transport-server-tls-passthrough/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-tls-passthrough/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-tls-passthrough/standard
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-udp-load-balance/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-udp-load-balance
+    name: install cmd
+  - command: mv ./tests/data/transport-server-udp-load-balance/failing-hc-transport-server.yaml
+      ./tests/data/transport-server-udp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-udp-load-balance/missing-service-transport-server.yaml
+      ./tests/data/transport-server-udp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-udp-load-balance/passing-hc-transport-server.yaml
+      ./tests/data/transport-server-udp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-udp-load-balance/second-transport-server.yaml
+      ./tests/data/transport-server-udp-load-balance/k8s_manifests/ && mv ./tests/data/transport-server-udp-load-balance/wrong-port-transport-server.yaml
+      ./tests/data/transport-server-udp-load-balance/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-udp-load-balance
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-udp-load-balance
+    name: install cmd
+  - command: mkdir ./tests/data/transport-server-udp-load-balance/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/transport-server-udp-load-balance/standard
+    name: install cmd
+  - command: mv ./tests/data/transport-server-udp-load-balance/standard/global-configuration.yaml
+      ./tests/data/transport-server-udp-load-balance/standard/k8s_manifests/ && mv
+      ./tests/data/transport-server-udp-load-balance/standard/service_deployment.yaml
+      ./tests/data/transport-server-udp-load-balance/standard/k8s_manifests/ && mv
+      ./tests/data/transport-server-udp-load-balance/standard/transport-server.yaml
+      ./tests/data/transport-server-udp-load-balance/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/transport-server-udp-load-balance/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/transport-server-udp-load-balance/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server
+    name: install cmd
+  - command: mv ./tests/data/virtual-server/rbac-without-vs.yaml ./tests/data/virtual-server/k8s_manifests/
+      && mv ./tests/data/virtual-server/virtual-server-gunzip.yaml ./tests/data/virtual-server/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server/standard/virtual-server-updated.yaml ./tests/data/virtual-server/standard/k8s_manifests/
+      && mv ./tests/data/virtual-server/standard/virtual-server.yaml ./tests/data/virtual-server/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-advanced-routing/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-advanced-routing
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-advanced-routing/virtual-server-argument.yaml
+      ./tests/data/virtual-server-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-advanced-routing/virtual-server-complex.yaml
+      ./tests/data/virtual-server-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-advanced-routing/virtual-server-cookie.yaml
+      ./tests/data/virtual-server-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-advanced-routing/virtual-server-variable.yaml
+      ./tests/data/virtual-server-advanced-routing/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-advanced-routing
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-advanced-routing
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-advanced-routing/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-advanced-routing/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-advanced-routing/standard/virtual-server.yaml
+      ./tests/data/virtual-server-advanced-routing/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-advanced-routing/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-advanced-routing/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-backup-service/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-backup-service
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-backup-service/backup-svc.yaml ./tests/data/virtual-server-backup-service/k8s_manifests/
+      && mv ./tests/data/virtual-server-backup-service/nginx-config.yaml ./tests/data/virtual-server-backup-service/k8s_manifests/
+      && mv ./tests/data/virtual-server-backup-service/virtual-server-backup.yaml
+      ./tests/data/virtual-server-backup-service/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-backup-service
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-backup-service
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-backup-service/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-backup-service/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-backup-service/standard/virtual-server.yaml
+      ./tests/data/virtual-server-backup-service/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-backup-service/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-backup-service/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-canned-responses/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-canned-responses
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-canned-responses/virtual-server-invalid-openapi.yaml
+      ./tests/data/virtual-server-canned-responses/k8s_manifests/ && mv ./tests/data/virtual-server-canned-responses/virtual-server-invalid.yaml
+      ./tests/data/virtual-server-canned-responses/k8s_manifests/ && mv ./tests/data/virtual-server-canned-responses/virtual-server-updated.yaml
+      ./tests/data/virtual-server-canned-responses/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-canned-responses
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-canned-responses
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-canned-responses/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-canned-responses/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-canned-responses/standard/virtual-server.yaml
+      ./tests/data/virtual-server-canned-responses/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-canned-responses/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-canned-responses/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-certmanager/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-certmanager
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-certmanager/ca-issuer.yaml ./tests/data/virtual-server-certmanager/k8s_manifests/
+      && mv ./tests/data/virtual-server-certmanager/certmanager.yaml ./tests/data/virtual-server-certmanager/k8s_manifests/
+      && mv ./tests/data/virtual-server-certmanager/self-signed.yaml ./tests/data/virtual-server-certmanager/k8s_manifests/
+      && mv ./tests/data/virtual-server-certmanager/tls-secret.yaml ./tests/data/virtual-server-certmanager/k8s_manifests/
+      && mv ./tests/data/virtual-server-certmanager/virtual-server-no-cm.yaml ./tests/data/virtual-server-certmanager/k8s_manifests/
+      && mv ./tests/data/virtual-server-certmanager/virtual-server-no-secret.yaml
+      ./tests/data/virtual-server-certmanager/k8s_manifests/ && mv ./tests/data/virtual-server-certmanager/virtual-server-no-tls.yaml
+      ./tests/data/virtual-server-certmanager/k8s_manifests/ && mv ./tests/data/virtual-server-certmanager/virtual-server-updated.yaml
+      ./tests/data/virtual-server-certmanager/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-certmanager
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-certmanager
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-certmanager/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-certmanager/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-certmanager/standard/virtual-server.yaml
+      ./tests/data/virtual-server-certmanager/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-certmanager/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-certmanager/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-configmap-keys/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-configmap-keys
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-configmap-keys/configmap-global-variables.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-no-validation-keys-invalid.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-no-validation-keys.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-ssl-keys-invalid.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-ssl-keys.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-validation-keys-invalid-oss.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-validation-keys-invalid.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-validation-keys-oss.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/ && mv ./tests/data/virtual-server-configmap-keys/configmap-validation-keys.yaml
+      ./tests/data/virtual-server-configmap-keys/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-configmap-keys
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-configmap-keys
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-configmap-keys/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-configmap-keys/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-configmap-keys/standard/virtual-server.yaml
+      ./tests/data/virtual-server-configmap-keys/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-configmap-keys/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-configmap-keys/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-custom-listeners/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-custom-listeners
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-custom-listeners/global-configuration-http-listener-with-ssl.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/global-configuration-https-listener-without-ssl.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/global-configuration-missing-http-https.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/global-configuration-missing-http.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/global-configuration-missing-https.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/global-configuration.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/virtual-server-http-https-listeners-switched.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/virtual-server-http-listener-in-https-block.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/virtual-server-https-listener-in-http-block.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/ && mv ./tests/data/virtual-server-custom-listeners/virtual-server.yaml
+      ./tests/data/virtual-server-custom-listeners/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-custom-listeners
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-custom-listeners
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-custom-listeners/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-custom-listeners/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-custom-listeners/standard/virtual-server.yaml
+      ./tests/data/virtual-server-custom-listeners/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-custom-listeners/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-custom-listeners/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-dos/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-dos
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-dos/dos-logconf.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+      && mv ./tests/data/virtual-server-dos/dos-policy.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+      && mv ./tests/data/virtual-server-dos/dos-protected.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+      && mv ./tests/data/virtual-server-dos/syslog.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+      && mv ./tests/data/virtual-server-dos/virtual-server-block-server.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+      && mv ./tests/data/virtual-server-dos/virtual-server.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+      && mv ./tests/data/virtual-server-dos/webapp.yaml ./tests/data/virtual-server-dos/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-dos
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-dos
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-dynamic-configuration/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-dynamic-configuration/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-dynamic-configuration/standard/virtual-server.yaml
+      ./tests/data/virtual-server-dynamic-configuration/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-dynamic-configuration/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-dynamic-configuration/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-error-pages/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-error-pages
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-error-pages/virtual-server-invalid-openapi.yaml
+      ./tests/data/virtual-server-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-error-pages/virtual-server-invalid.yaml
+      ./tests/data/virtual-server-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-error-pages/virtual-server-matches.yaml
+      ./tests/data/virtual-server-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-error-pages/virtual-server-splits.yaml
+      ./tests/data/virtual-server-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-error-pages/virtual-server-updated.yaml
+      ./tests/data/virtual-server-error-pages/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-error-pages
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-error-pages
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-error-pages/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-error-pages/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-error-pages/standard/virtual-server.yaml
+      ./tests/data/virtual-server-error-pages/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-error-pages/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-error-pages/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-external-dns/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-external-dns
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-external-dns/external-dns.yaml ./tests/data/virtual-server-external-dns/k8s_manifests/
+      && mv ./tests/data/virtual-server-external-dns/nginx-config.yaml ./tests/data/virtual-server-external-dns/k8s_manifests/
+      && mv ./tests/data/virtual-server-external-dns/virtual-server-no-ed.yaml ./tests/data/virtual-server-external-dns/k8s_manifests/
+      && mv ./tests/data/virtual-server-external-dns/virtual-server-updated.yaml ./tests/data/virtual-server-external-dns/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-external-dns
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-external-dns
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-external-dns/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-external-dns/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-external-dns/standard/virtual-server.yaml
+      ./tests/data/virtual-server-external-dns/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-external-dns/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-external-dns/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-externalname/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-externalname
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-externalname/externalname-svc.yaml ./tests/data/virtual-server-externalname/k8s_manifests/
+      && mv ./tests/data/virtual-server-externalname/nginx-config.yaml ./tests/data/virtual-server-externalname/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-externalname
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-externalname
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-externalname/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-externalname/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-externalname/standard/virtual-server.yaml
+      ./tests/data/virtual-server-externalname/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-externalname/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-externalname/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-focused-canary/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-focused-canary/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-focused-canary/standard/virtual-server.yaml
+      ./tests/data/virtual-server-focused-canary/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-focused-canary/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-focused-canary/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-grpc/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-grpc/nginx-config.yaml ./tests/data/virtual-server-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-grpc/tls-secret.yaml ./tests/data/virtual-server-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-grpc/virtual-server-error-page.yaml ./tests/data/virtual-server-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-grpc/virtual-server-healthcheck-invalid.yaml
+      ./tests/data/virtual-server-grpc/k8s_manifests/ && mv ./tests/data/virtual-server-grpc/virtual-server-healthcheck.yaml
+      ./tests/data/virtual-server-grpc/k8s_manifests/ && mv ./tests/data/virtual-server-grpc/virtual-server-invalid-type.yaml
+      ./tests/data/virtual-server-grpc/k8s_manifests/ && mv ./tests/data/virtual-server-grpc/virtual-server-updated.yaml
+      ./tests/data/virtual-server-grpc/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-grpc/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-grpc/standard/virtual-server.yaml ./tests/data/virtual-server-grpc/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-grpc-mixed/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc-mixed
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-grpc-mixed/nginx-config.yaml ./tests/data/virtual-server-grpc-mixed/k8s_manifests/
+      && mv ./tests/data/virtual-server-grpc-mixed/tls-secret.yaml ./tests/data/virtual-server-grpc-mixed/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc-mixed
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc-mixed
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-grpc-mixed/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc-mixed/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-grpc-mixed/standard/virtual-server.yaml
+      ./tests/data/virtual-server-grpc-mixed/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc-mixed/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-grpc-mixed/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-redirects/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-redirects
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-redirects/virtual-server-invalid-openapi.yaml
+      ./tests/data/virtual-server-redirects/k8s_manifests/ && mv ./tests/data/virtual-server-redirects/virtual-server-invalid.yaml
+      ./tests/data/virtual-server-redirects/k8s_manifests/ && mv ./tests/data/virtual-server-redirects/virtual-server-updated.yaml
+      ./tests/data/virtual-server-redirects/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-redirects
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-redirects
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-redirects/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-redirects/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-redirects/standard/virtual-server.yaml
+      ./tests/data/virtual-server-redirects/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-redirects/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-redirects/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route/route-multiple-updated.yaml ./tests/data/virtual-server-route/k8s_manifests/
+      && mv ./tests/data/virtual-server-route/route-multiple.yaml ./tests/data/virtual-server-route/k8s_manifests/
+      && mv ./tests/data/virtual-server-route/route-orphan.yaml ./tests/data/virtual-server-route/k8s_manifests/
+      && mv ./tests/data/virtual-server-route/route-single-duplicate-path.yaml ./tests/data/virtual-server-route/k8s_manifests/
+      && mv ./tests/data/virtual-server-route/route-single-invalid-host.yaml ./tests/data/virtual-server-route/k8s_manifests/
+      && mv ./tests/data/virtual-server-route/route-single-invalid-openapi.yaml ./tests/data/virtual-server-route/k8s_manifests/
+      && mv ./tests/data/virtual-server-route/route-single.yaml ./tests/data/virtual-server-route/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route/standard/virtual-server.yaml ./tests/data/virtual-server-route/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-advanced-routing/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-advanced-routing
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-advanced-routing/virtual-server-route-argument.yaml
+      ./tests/data/virtual-server-route-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-route-advanced-routing/virtual-server-route-complex.yaml
+      ./tests/data/virtual-server-route-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-route-advanced-routing/virtual-server-route-cookie.yaml
+      ./tests/data/virtual-server-route-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-route-advanced-routing/virtual-server-route-header.yaml
+      ./tests/data/virtual-server-route-advanced-routing/k8s_manifests/ && mv ./tests/data/virtual-server-route-advanced-routing/virtual-server-route-variable.yaml
+      ./tests/data/virtual-server-route-advanced-routing/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-advanced-routing
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-advanced-routing
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-advanced-routing/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-advanced-routing/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-advanced-routing/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-advanced-routing/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-advanced-routing/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-advanced-routing/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-canned-responses/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-canned-responses
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-canned-responses/route-multiple-invalid-openapi.yaml
+      ./tests/data/virtual-server-route-canned-responses/k8s_manifests/ && mv ./tests/data/virtual-server-route-canned-responses/route-multiple-invalid.yaml
+      ./tests/data/virtual-server-route-canned-responses/k8s_manifests/ && mv ./tests/data/virtual-server-route-canned-responses/route-multiple-updated.yaml
+      ./tests/data/virtual-server-route-canned-responses/k8s_manifests/ && mv ./tests/data/virtual-server-route-canned-responses/route-multiple.yaml
+      ./tests/data/virtual-server-route-canned-responses/k8s_manifests/ && mv ./tests/data/virtual-server-route-canned-responses/route-single.yaml
+      ./tests/data/virtual-server-route-canned-responses/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-canned-responses
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-canned-responses
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-canned-responses/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-canned-responses/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-canned-responses/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-canned-responses/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-canned-responses/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-canned-responses/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-dynamic-configuration/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-dynamic-configuration
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-dynamic-configuration/route-multiple.yaml
+      ./tests/data/virtual-server-route-dynamic-configuration/k8s_manifests/ && mv
+      ./tests/data/virtual-server-route-dynamic-configuration/route-single.yaml ./tests/data/virtual-server-route-dynamic-configuration/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-dynamic-configuration
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-dynamic-configuration
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-dynamic-configuration/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-dynamic-configuration/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-dynamic-configuration/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-dynamic-configuration/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-dynamic-configuration/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-dynamic-configuration/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-error-pages/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-error-pages
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-error-pages/route-multiple-invalid-openapi.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-multiple-invalid.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-multiple-matches.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-multiple-splits.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-multiple-updated.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-multiple.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-single-invalid.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/ && mv ./tests/data/virtual-server-route-error-pages/route-single.yaml
+      ./tests/data/virtual-server-route-error-pages/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-error-pages
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-error-pages
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-error-pages/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-error-pages/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-error-pages/standard/virtual-server-updated.yaml
+      ./tests/data/virtual-server-route-error-pages/standard/k8s_manifests/ && mv
+      ./tests/data/virtual-server-route-error-pages/standard/virtual-server.yaml ./tests/data/virtual-server-route-error-pages/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-error-pages/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-error-pages/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-externalname/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-externalname
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-externalname/externalname-svc.yaml
+      ./tests/data/virtual-server-route-externalname/k8s_manifests/ && mv ./tests/data/virtual-server-route-externalname/nginx-config.yaml
+      ./tests/data/virtual-server-route-externalname/k8s_manifests/ && mv ./tests/data/virtual-server-route-externalname/route-single.yaml
+      ./tests/data/virtual-server-route-externalname/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-externalname
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-externalname
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-externalname/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-externalname/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-externalname/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-externalname/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-externalname/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-externalname/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-focused-canary/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-focused-canary
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-focused-canary/virtual-server-route.yaml
+      ./tests/data/virtual-server-route-focused-canary/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-focused-canary
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-focused-canary
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-focused-canary/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-focused-canary/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-focused-canary/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-focused-canary/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-focused-canary/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-focused-canary/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-grpc/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-grpc
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-grpc/nginx-config.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-grpc/route-invalid-type.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-grpc/route-multiple-mixed.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-grpc/route-multiple.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-grpc/route-single.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-grpc/route-updated.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-grpc/tls-secret.yaml ./tests/data/virtual-server-route-grpc/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-grpc
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-grpc
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-grpc/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-grpc/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-grpc/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-grpc/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-grpc/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-grpc/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-redirects/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-redirects
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-redirects/route-multiple-invalid-openapi.yaml
+      ./tests/data/virtual-server-route-redirects/k8s_manifests/ && mv ./tests/data/virtual-server-route-redirects/route-multiple-invalid.yaml
+      ./tests/data/virtual-server-route-redirects/k8s_manifests/ && mv ./tests/data/virtual-server-route-redirects/route-multiple-updated.yaml
+      ./tests/data/virtual-server-route-redirects/k8s_manifests/ && mv ./tests/data/virtual-server-route-redirects/route-multiple.yaml
+      ./tests/data/virtual-server-route-redirects/k8s_manifests/ && mv ./tests/data/virtual-server-route-redirects/route-single.yaml
+      ./tests/data/virtual-server-route-redirects/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-redirects
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-redirects
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-redirects/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-redirects/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-redirects/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-redirects/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-redirects/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-redirects/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-regexp-location/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-regexp-location/route-multiple-invalid-multiple-regexp-subroutes.yaml
+      ./tests/data/virtual-server-route-regexp-location/k8s_manifests/ && mv ./tests/data/virtual-server-route-regexp-location/route-multiple.yaml
+      ./tests/data/virtual-server-route-regexp-location/k8s_manifests/ && mv ./tests/data/virtual-server-route-regexp-location/route-single-case-insensitive.yaml
+      ./tests/data/virtual-server-route-regexp-location/k8s_manifests/ && mv ./tests/data/virtual-server-route-regexp-location/route-single-case-sensitive.yaml
+      ./tests/data/virtual-server-route-regexp-location/k8s_manifests/ && mv ./tests/data/virtual-server-route-regexp-location/route-single-exact.yaml
+      ./tests/data/virtual-server-route-regexp-location/k8s_manifests/ && mv ./tests/data/virtual-server-route-regexp-location/route-single.yaml
+      ./tests/data/virtual-server-route-regexp-location/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-regexp-location/additional-case/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location/additional-case
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-regexp-location/additional-case/route-exact.yaml
+      ./tests/data/virtual-server-route-regexp-location/additional-case/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-regexp-location/additional-case/route-prefix.yaml
+      ./tests/data/virtual-server-route-regexp-location/additional-case/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-regexp-location/additional-case/route-regexp.yaml
+      ./tests/data/virtual-server-route-regexp-location/additional-case/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-regexp-location/additional-case/virtual-server-exact-over-all.yaml
+      ./tests/data/virtual-server-route-regexp-location/additional-case/k8s_manifests/
+      && mv ./tests/data/virtual-server-route-regexp-location/additional-case/virtual-server-regexp-over-prefix.yaml
+      ./tests/data/virtual-server-route-regexp-location/additional-case/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location/additional-case
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location/additional-case
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-regexp-location/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-regexp-location/standard/virtual-server-case-insensitive.yaml
+      ./tests/data/virtual-server-route-regexp-location/standard/k8s_manifests/ &&
+      mv ./tests/data/virtual-server-route-regexp-location/standard/virtual-server-case-sensitive.yaml
+      ./tests/data/virtual-server-route-regexp-location/standard/k8s_manifests/ &&
+      mv ./tests/data/virtual-server-route-regexp-location/standard/virtual-server-exact.yaml
+      ./tests/data/virtual-server-route-regexp-location/standard/k8s_manifests/ &&
+      mv ./tests/data/virtual-server-route-regexp-location/standard/virtual-server-invalid-duplicate-routes.yaml
+      ./tests/data/virtual-server-route-regexp-location/standard/k8s_manifests/ &&
+      mv ./tests/data/virtual-server-route-regexp-location/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-regexp-location/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-regexp-location/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-split-traffic/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-split-traffic
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-split-traffic/route-multiple.yaml
+      ./tests/data/virtual-server-route-split-traffic/k8s_manifests/ && mv ./tests/data/virtual-server-route-split-traffic/route-single.yaml
+      ./tests/data/virtual-server-route-split-traffic/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-split-traffic
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-split-traffic
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-split-traffic/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-split-traffic/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-split-traffic/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-split-traffic/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-split-traffic/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-split-traffic/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-status/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-status
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-status/route-multiple-invalid-prefixed-path.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/ && mv ./tests/data/virtual-server-route-status/route-multiple-invalid.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/ && mv ./tests/data/virtual-server-route-status/route-multiple.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/ && mv ./tests/data/virtual-server-route-status/route-single-invalid-prefixed-path.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/ && mv ./tests/data/virtual-server-route-status/route-single-invalid.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/ && mv ./tests/data/virtual-server-route-status/route-single.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/ && mv ./tests/data/virtual-server-route-status/virtual-server-invalid.yaml
+      ./tests/data/virtual-server-route-status/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-status
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-status
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-status/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-status/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-status/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-status/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-status/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-status/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-upstream-options/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-options
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-upstream-options/configmap-with-keys.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/plus-route-m-invalid-keys.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/plus-route-s-invalid-keys-openapi.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/plus-route-s-invalid-keys.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/route-multiple-invalid-keys.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/route-multiple.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/route-single-invalid-keys-openapi.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/route-single-invalid-keys.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-options/route-single.yaml
+      ./tests/data/virtual-server-route-upstream-options/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-options
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-options
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-upstream-options/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-options/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-upstream-options/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-upstream-options/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-options/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-options/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-upstream-tls/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-tls
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-upstream-tls/route-multiple.yaml
+      ./tests/data/virtual-server-route-upstream-tls/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-tls/route-single-disable-tls.yaml
+      ./tests/data/virtual-server-route-upstream-tls/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-tls/route-single-invalid.yaml
+      ./tests/data/virtual-server-route-upstream-tls/k8s_manifests/ && mv ./tests/data/virtual-server-route-upstream-tls/route-single.yaml
+      ./tests/data/virtual-server-route-upstream-tls/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-tls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-tls
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-route-upstream-tls/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-tls/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-route-upstream-tls/standard/virtual-server.yaml
+      ./tests/data/virtual-server-route-upstream-tls/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-tls/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-route-upstream-tls/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-split-traffic/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-split-traffic/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-split-traffic/standard/virtual-server.yaml
+      ./tests/data/virtual-server-split-traffic/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-split-traffic/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-split-traffic/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-status/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-status
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-status/invalid-state.yaml ./tests/data/virtual-server-status/k8s_manifests/
+      && mv ./tests/data/virtual-server-status/warning-state.yaml ./tests/data/virtual-server-status/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-status
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-status
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-status/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-status/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-status/standard/virtual-server.yaml ./tests/data/virtual-server-status/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-status/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-status/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-tls/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-tls/invalid-tls-secret.yaml ./tests/data/virtual-server-tls/k8s_manifests/
+      && mv ./tests/data/virtual-server-tls/new-tls-secret.yaml ./tests/data/virtual-server-tls/k8s_manifests/
+      && mv ./tests/data/virtual-server-tls/tls-secret.yaml ./tests/data/virtual-server-tls/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-tls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-tls/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-tls/standard/virtual-server.yaml ./tests/data/virtual-server-tls/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-tls/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-tls-redirect/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls-redirect
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-tls-redirect/virtual-server-default-redirect.yaml
+      ./tests/data/virtual-server-tls-redirect/k8s_manifests/ && mv ./tests/data/virtual-server-tls-redirect/virtual-server-header-redirect.yaml
+      ./tests/data/virtual-server-tls-redirect/k8s_manifests/ && mv ./tests/data/virtual-server-tls-redirect/virtual-server-invalid.yaml
+      ./tests/data/virtual-server-tls-redirect/k8s_manifests/ && mv ./tests/data/virtual-server-tls-redirect/virtual-server-no-tls-termination-redirect.yaml
+      ./tests/data/virtual-server-tls-redirect/k8s_manifests/ && mv ./tests/data/virtual-server-tls-redirect/virtual-server-scheme-redirect.yaml
+      ./tests/data/virtual-server-tls-redirect/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-tls-redirect
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls-redirect
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-tls-redirect/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls-redirect/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-tls-redirect/standard/virtual-server.yaml
+      ./tests/data/virtual-server-tls-redirect/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-tls-redirect/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-tls-redirect/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-upstream-options/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-options
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-upstream-options/configmap-with-keys.yaml
+      ./tests/data/virtual-server-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-upstream-options/plus-virtual-server-with-invalid-keys-openapi.yaml
+      ./tests/data/virtual-server-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-upstream-options/plus-virtual-server-with-invalid-keys.yaml
+      ./tests/data/virtual-server-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-upstream-options/virtual-server-with-invalid-keys-openapi.yaml
+      ./tests/data/virtual-server-upstream-options/k8s_manifests/ && mv ./tests/data/virtual-server-upstream-options/virtual-server-with-invalid-keys.yaml
+      ./tests/data/virtual-server-upstream-options/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-options
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-options
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-upstream-options/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-options/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-upstream-options/standard/virtual-server.yaml
+      ./tests/data/virtual-server-upstream-options/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-options/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-options/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-upstream-tls/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-tls
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-upstream-tls/virtual-server-disable-tls.yaml
+      ./tests/data/virtual-server-upstream-tls/k8s_manifests/ && mv ./tests/data/virtual-server-upstream-tls/virtual-server-invalid.yaml
+      ./tests/data/virtual-server-upstream-tls/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-tls
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-tls
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-upstream-tls/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-tls/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-upstream-tls/standard/virtual-server.yaml
+      ./tests/data/virtual-server-upstream-tls/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-tls/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-upstream-tls/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-validation/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-validation
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-validation/virtual-server-invalid-cookie.yaml
+      ./tests/data/virtual-server-validation/k8s_manifests/ && mv ./tests/data/virtual-server-validation/virtual-server-no-default-action.yaml
+      ./tests/data/virtual-server-validation/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-validation
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-validation
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-validation/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-validation/standard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-validation/standard/virtual-server.yaml
+      ./tests/data/virtual-server-validation/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-validation/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-validation/standard
+    name: install cmd
+  - command: mkdir ./tests/data/virtual-server-wildcard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-wildcard
+    name: install cmd
+  - command: mv ./tests/data/virtual-server-wildcard/virtual-server-wildcard.yaml
+      ./tests/data/virtual-server-wildcard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/virtual-server-wildcard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/virtual-server-wildcard
+    name: install cmd
+  - command: mkdir ./tests/data/watch-namespace/k8s_manifests
+    directory: kubernetes-ingress/tests/data/watch-namespace
+    name: install cmd
+  - command: mv ./tests/data/watch-namespace/foreign-ns-ingress.yaml ./tests/data/watch-namespace/k8s_manifests/
+      && mv ./tests/data/watch-namespace/foreign-ns-virtual-server.yaml ./tests/data/watch-namespace/k8s_manifests/
+      && mv ./tests/data/watch-namespace/watched-ns-ingress.yaml ./tests/data/watch-namespace/k8s_manifests/
+      && mv ./tests/data/watch-namespace/watched-ns-virtual-server.yaml ./tests/data/watch-namespace/k8s_manifests/
+      && mv ./tests/data/watch-namespace/watched-ns2-ingress.yaml ./tests/data/watch-namespace/k8s_manifests/
+      && mv ./tests/data/watch-namespace/watched-ns2-virtual-server.yaml ./tests/data/watch-namespace/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/watch-namespace
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/watch-namespace
+    name: install cmd
+  - command: mkdir ./tests/data/watch-secret-namespace/k8s_manifests
+    directory: kubernetes-ingress/tests/data/watch-secret-namespace
+    name: install cmd
+  - command: mv ./tests/data/watch-secret-namespace/route-multiple.yaml ./tests/data/watch-secret-namespace/k8s_manifests/
+      && mv ./tests/data/watch-secret-namespace/route-single.yaml ./tests/data/watch-secret-namespace/k8s_manifests/
+      && mv ./tests/data/watch-secret-namespace/tls-secret.yaml ./tests/data/watch-secret-namespace/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/watch-secret-namespace
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/watch-secret-namespace
+    name: install cmd
+  - command: mkdir ./tests/data/watch-secret-namespace/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/watch-secret-namespace/standard
+    name: install cmd
+  - command: mv ./tests/data/watch-secret-namespace/standard/virtual-server.yaml ./tests/data/watch-secret-namespace/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/watch-secret-namespace/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/watch-secret-namespace/standard
+    name: install cmd
+  - command: mkdir ./tests/data/wildcard-tls-secret/k8s_manifests
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret
+    name: install cmd
+  - command: mv ./tests/data/wildcard-tls-secret/gb-wildcard-tls-secret.yaml ./tests/data/wildcard-tls-secret/k8s_manifests/
+      && mv ./tests/data/wildcard-tls-secret/invalid-wildcard-tls-secret.yaml ./tests/data/wildcard-tls-secret/k8s_manifests/
+      && mv ./tests/data/wildcard-tls-secret/wildcard-tls-secret.yaml ./tests/data/wildcard-tls-secret/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret
+    name: install cmd
+  - command: mkdir ./tests/data/wildcard-tls-secret/mergeable/k8s_manifests
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret/mergeable
+    name: install cmd
+  - command: mv ./tests/data/wildcard-tls-secret/mergeable/wildcard-secret-ingress.yaml
+      ./tests/data/wildcard-tls-secret/mergeable/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret/mergeable
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret/mergeable
+    name: install cmd
+  - command: mkdir ./tests/data/wildcard-tls-secret/standard/k8s_manifests
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret/standard
+    name: install cmd
+  - command: mv ./tests/data/wildcard-tls-secret/standard/wildcard-secret-ingress.yaml
+      ./tests/data/wildcard-tls-secret/standard/k8s_manifests/
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret/standard
+    name: install cmd
+  - command: kubectl apply -f k8s-manifests
+    directory: kubernetes-ingress/tests/data/wildcard-tls-secret/standard
+    name: install cmd
+  name: ""
+  packages:
+  - nixpkgs.docker
+  - nixpkgs.gcc
+  - nixpkgs.go
+  - nixpkgs.go_1_19
+  - nixpkgs.helm
+  - nixpkgs.kubernetes
+  - nixpkgs.python38
+  repos:
+  - https://github.com/nginxinc/kubernetes-ingress
